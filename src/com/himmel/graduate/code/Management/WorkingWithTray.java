@@ -27,7 +27,7 @@ public class WorkingWithTray {
 
     private void addAppToTray() {
         try {
-            //Инициализация тулкит, вроде как туркит-бар
+            //Инициализация тулкит, вроде как тулкит-бар
             java.awt.Toolkit.getDefaultToolkit();
 
             //Провека наличия тулбара
@@ -50,16 +50,11 @@ public class WorkingWithTray {
             trayIcon.addActionListener(event -> Platform.runLater(main::showStage));
 
             //Если нажата ктопка открытия окна
-            java.awt.MenuItem openItem = new java.awt.MenuItem("Открыть окно");
+            java.awt.MenuItem openItem = new java.awt.MenuItem("Show window");
             openItem.addActionListener(event -> Platform.runLater(main::showStage));
 
-            //Жирный шрифт для вывода название программы
-            java.awt.Font defaultFont = java.awt.Font.decode(null);
-            java.awt.Font boldFont = defaultFont.deriveFont(java.awt.Font.BOLD);
-            openItem.setFont(boldFont);
-
             //Выход из приложения при нажатии на выход
-            java.awt.MenuItem exitItem = new java.awt.MenuItem("Выхот");
+            java.awt.MenuItem exitItem = new java.awt.MenuItem("Exit");
             exitItem.addActionListener(event -> {
                 Platform.exit();
                 tray.remove(trayIcon);
@@ -76,8 +71,10 @@ public class WorkingWithTray {
             //Прикрепление меню к иконке в трее
             trayIcon.setPopupMenu(popup);
 
+            //Вывод сообщения о запуске приложения
             javax.swing.SwingUtilities.invokeLater(() ->trayIcon.displayMessage(APPLICATIO_NAME, "Synchronization is run", java.awt.TrayIcon.MessageType.INFO));
 
+            //Добавление иконки в трей
             tray.add(trayIcon);
         } catch (java.awt.AWTException | IOException e) {
             System.out.println("Unable to init system tray");
