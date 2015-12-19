@@ -1,4 +1,5 @@
 package com.himmel.graduate.code;
+
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -7,7 +8,7 @@ import java.net.*;
 
 public class Main {
     public static final String APPLICATION_NAME = "TrayIconExample";
-    public static final String ICON_STR = "/images/image.png";
+    public static final String ICON_STR = "/com/himmel/graduate/images/image.png";
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
