@@ -1,60 +1,87 @@
 package com.himmel.graduate.code.Management;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import javafx.application.Platform;
+
+import javax.imageio.ImageIO;
+import java.io.IOException;
 import java.net.URL;
 
 /**
  * Created by Lyaro on 19.12.2015.
  */
+
+//Клас для работы с треем
 public class WorkingWithTray {
-    private final static String ICON_STR = "/com/himmel/graduate/images/image.png";
-    private static String APPLICATION_NAME;
+    //Сылка на Main позволяющая открывать закрывать окно
+    private Main main;
+    private String APPLICATIO_NAME;
 
-    public WorkingWithTray(String applicationName){
-        APPLICATION_NAME = new String(applicationName);
+    public WorkingWithTray (Main main, String appName){
+        this.main = main;
+        APPLICATIO_NAME = appName;
     }
 
-    public void setApplicationWithTray () {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                setTrayIcon();
-            }
-        });
+    public void addAplicationToTray (){
+        javax.swing.SwingUtilities.invokeLater(this::addAppToTray);
     }
 
-    private void setTrayIcon() {
-
-        if(! SystemTray.isSupported() ) {
-            return;
-        }
-
-        PopupMenu trayMenu = new PopupMenu();
-        MenuItem item = new MenuItem("Exit");
-        item.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.exit(0);
-            }
-        });
-        trayMenu.add(item);
-
-        URL imageURL = Start.class.getResource(ICON_STR);
-
-        Image icon = Toolkit.getDefaultToolkit().getImage(imageURL);
-        TrayIcon trayIcon = new TrayIcon(icon, APPLICATION_NAME, trayMenu);
-        trayIcon.setImageAutoSize(true);
-
-        SystemTray tray = SystemTray.getSystemTray();
+    private void addAppToTray() {
         try {
+            //Инициализация тулкит, вроде как туркит-бар
+            java.awt.Toolkit.getDefaultToolkit();
+
+            //Провека наличия тулбара
+            if (!java.awt.SystemTray.isSupported()) {
+                System.err.println("No system tray support, application exiting.");
+                Platform.exit();
+            }
+
+            //Получение системного трея
+            java.awt.SystemTray tray = java.awt.SystemTray.getSystemTray();
+
+            //Получение картинки
+            //Создание иконки для трея
+            URL imageLoc = Main.class.getResource("/com/himmel/graduate/images/image.png");
+            java.awt.Image image = ImageIO.read(imageLoc);
+            java.awt.TrayIcon trayIcon = new java.awt.TrayIcon(image);
+            trayIcon.setImageAutoSize(true);
+
+            //Обработка двойного нажатия на иконку(открытияе окна)
+            trayIcon.addActionListener(event -> Platform.runLater(main::showStage));
+
+            //Если нажата ктопка открытия окна
+            java.awt.MenuItem openItem = new java.awt.MenuItem("Открыть окно");
+            openItem.addActionListener(event -> Platform.runLater(main::showStage));
+
+            //Жирный шрифт для вывода название программы
+            java.awt.Font defaultFont = java.awt.Font.decode(null);
+            java.awt.Font boldFont = defaultFont.deriveFont(java.awt.Font.BOLD);
+            openItem.setFont(boldFont);
+
+            //Выход из приложения при нажатии на выход
+            java.awt.MenuItem exitItem = new java.awt.MenuItem("Выхот");
+            exitItem.addActionListener(event -> {
+                Platform.exit();
+                tray.remove(trayIcon);
+            });
+
+            //создание всплывающео меню
+            final java.awt.PopupMenu popup = new java.awt.PopupMenu();
+            //Добавление в меню пункта показа окна
+            popup.add(openItem);
+            //Добавление в меню разделителя
+            popup.addSeparator();
+            //Добавление в меню пункта выхход
+            popup.add(exitItem);
+            //Прикрепление меню к иконке в трее
+            trayIcon.setPopupMenu(popup);
+
+            javax.swing.SwingUtilities.invokeLater(() ->trayIcon.displayMessage(APPLICATIO_NAME, "Synchronization is run", java.awt.TrayIcon.MessageType.INFO));
+
             tray.add(trayIcon);
-        } catch (AWTException e) {
+        } catch (java.awt.AWTException | IOException e) {
+            System.out.println("Unable to init system tray");
             e.printStackTrace();
         }
-
-        trayIcon.displayMessage(APPLICATION_NAME, "Application started!", TrayIcon.MessageType.INFO);
     }
 }
