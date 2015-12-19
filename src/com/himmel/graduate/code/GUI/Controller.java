@@ -1,4 +1,4 @@
-package com.himmel.graduate.code;
+package com.himmel.graduate.code.GUI;
 
 import javafx.event.ActionEvent;
 
