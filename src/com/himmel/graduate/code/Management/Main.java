@@ -1,11 +1,10 @@
-package com.himmel.graduate.code;
+package com.himmel.graduate.code.Management;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -70,7 +69,7 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("/com/himmel/graduate/code/GUI/sample.fxml"));
         primaryStage.setTitle("Client");
         primaryStage.setScene(new Scene(root, 400, 300));
         primaryStage.show();
