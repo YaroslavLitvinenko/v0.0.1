@@ -30,6 +30,7 @@ public class Main extends Application {
         Parent root = FXMLLoader.load(getClass().getResource("/com/himmel/graduate/code/GUI/sample.fxml"));
         primaryStage.setTitle(APPLICATIO_NAME);
         primaryStage.setScene(new Scene(root, 400, 300));
+        showStage();
     }
 
     //Позволяет правильно открывать окна
