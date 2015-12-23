@@ -1,23 +1,120 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
+<?import javafx.scene.effect.*?>
+<?import javafx.scene.text.*?>
 <?import javafx.scene.control.*?>
+<?import java.lang.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
 
-<GridPane xmlns:fx="http://javafx.com/fxml/1" alignment="CENTER" hgap="10.0" vgap="10.0" xmlns="http://javafx.com/javafx/8" fx:controller="com.himmel.graduate.code.GUI.Controller">
+<GridPane xmlns:fx="http://javafx.com/fxml/1" alignment="center" hgap="10" vgap="10" xmlns="http://javafx.com/javafx/8" fx:controller="com.himmel.graduate.code.GUI.Controller">
+  <columnConstraints>
+    <ColumnConstraints />
+  </columnConstraints>
+  <rowConstraints>
+    <RowConstraints />
+  </rowConstraints>
   <children>
-    <AnchorPane prefHeight="300.0" prefWidth="400.0" GridPane.columnIndex="0" GridPane.rowIndex="0">
+    <AnchorPane prefHeight="300.0" prefWidth="500.0">
       <children>
-        <Button layoutX="45.0" layoutY="68.0" mnemonicParsing="false" onAction="#File" text="Открыть файл" />
-        <Button layoutX="60.0" layoutY="20.0" mnemonicParsing="false" onAction="#Close" text="Закрыть" />
-            <TextField fx:id="test1" layoutX="91.0" layoutY="132.0" />
+        <ProgressBar fx:id="progres" layoutX="6.0" layoutY="277.0" prefHeight="18.0" prefWidth="489.0" progress="0.0" />
+        <TabPane layoutX="6.0" prefHeight="269.0" prefWidth="500.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="31.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+          <tabs>
+            <Tab text="Главная">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="238.0" prefWidth="500.0">
+                  <children>
+                    <TableView fx:id="tableOut" layoutX="14.0" prefHeight="240.0" prefWidth="500.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                      <columns>
+                        <TableColumn fx:id="columnOut" prefWidth="499.0" text="Вывод" />
+                      </columns>
+                    </TableView>
+                  </children>
+                </AnchorPane>
+              </content>
+            </Tab>
+            <Tab text="Настройки">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                  <children>
+                    <AnchorPane fx:id="devices" prefHeight="240.0" prefWidth="343.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="157.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                      <children>
+                        <TableView fx:id="devicesTable" layoutX="8.0" layoutY="7.0" prefHeight="240.0" prefWidth="250.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="94.0" AnchorPane.topAnchor="0.0">
+                          <columns>
+                            <TableColumn fx:id="devicesColumn" prefWidth="247.0" text="Устройства для синхронизации" />
+                          </columns>
+                        </TableView>
+                        <Button layoutX="260.0" layoutY="14.0" mnemonicParsing="false" text="Добавить" />
+                        <Button layoutX="260.0" layoutY="49.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="69.0" text="Удалить" />
+                      </children>
+                    </AnchorPane>
+                    <AnchorPane fx:id="data" layoutX="157.0" layoutY="14.0" prefHeight="240.0" prefWidth="343.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="157.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                      <children>
+                        <Button layoutX="260.0" layoutY="49.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="69.0" text="Удалить" />
+                        <Button layoutX="260.0" layoutY="14.0" mnemonicParsing="false" onAction="#newData" text="Добавить" />
+                        <TableView fx:id="dataTable" layoutX="14.0" layoutY="106.0" prefHeight="240.0" prefWidth="250.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="93.0" AnchorPane.topAnchor="0.0">
+                          <columns>
+                            <TableColumn fx:id="dataColumn" prefWidth="247.0" text="Данные для синхронизации" />
+                          </columns>
+                        </TableView>
+                      </children></AnchorPane>
+                    <AnchorPane fx:id="time" layoutX="157.0" layoutY="14.0" prefHeight="240.0" prefWidth="343.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="157.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                      <children>
+                        <Label layoutX="58.0" layoutY="140.0" text="Ввод времени">
+                          <font>
+                            <Font size="14.0" />
+                          </font>
+                        </Label>
+                        <TextField layoutX="57.0" layoutY="166.0" prefHeight="25.0" prefWidth="40.0" />
+                        <TextField layoutX="111.0" layoutY="167.0" prefHeight="25.0" prefWidth="40.0" />
+                        <Label layoutX="32.0" layoutY="14.0" text="Ввод времени синхронизации">
+                          <font>
+                            <Font size="20.0" />
+                          </font>
+                        </Label>
+                        <RadioButton layoutX="39.0" layoutY="51.0" mnemonicParsing="false" selected="true" text="1 час" />
+                        <RadioButton layoutX="39.0" layoutY="72.0" mnemonicParsing="false" text="2 часа" />
+                        <RadioButton layoutX="39.0" layoutY="93.0" mnemonicParsing="false" text="5 часов" />
+                        <RadioButton layoutX="39.0" layoutY="114.0" mnemonicParsing="false" text="24 часа" />
+                        <Label layoutX="102.0" layoutY="164.0" text=":">
+                          <font>
+                            <Font size="20.0" />
+                          </font>
+                        </Label>
+                      </children>
+                    </AnchorPane>
+                    <AnchorPane fx:id="langyage" layoutX="157.0" layoutY="14.0" prefHeight="240.0" prefWidth="343.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="157.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                      <children>
+                        <Label layoutX="109.0" layoutY="14.0" text="Выбор языка:">
+                          <font>
+                            <Font size="20.0" />
+                          </font>
+                        </Label>
+                        <RadioButton layoutX="22.0" layoutY="54.0" mnemonicParsing="false" text="English" />
+                        <RadioButton layoutX="22.0" layoutY="77.0" mnemonicParsing="false" text="Deutsch" />
+                        <RadioButton layoutX="22.0" layoutY="100.0" mnemonicParsing="false" text="Un français" />
+                        <RadioButton layoutX="22.0" layoutY="123.0" mnemonicParsing="false" selected="true" text="Русский" />
+                        <RadioButton layoutX="22.0" layoutY="146.0" mnemonicParsing="false" text="Українська" />
+                      </children></AnchorPane>
+                    <Button layoutX="6.0" layoutY="11.0" mnemonicParsing="false" onAction="#deviceAction" prefHeight="25.0" prefWidth="150.0" text="Устройства" />
+                    <Button layoutX="6.0" layoutY="36.0" mnemonicParsing="false" onAction="#dataAction" prefHeight="25.0" prefWidth="150.0" text="Файлы/Папки" />
+                    <Button layoutX="6.0" layoutY="61.0" mnemonicParsing="false" onAction="#timeAction" prefHeight="25.0" prefWidth="150.0" text="Время" />
+                    <Button layoutX="6.0" layoutY="86.0" mnemonicParsing="false" onAction="#languageAction" prefHeight="25.0" prefWidth="150.0" text="Язык" />
+                  </children>
+                </AnchorPane>
+              </content>
+            </Tab>
+            <Tab text="О программе">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+              </content>
+            </Tab>
+          </tabs>
+        </TabPane>
       </children>
     </AnchorPane>
   </children>
-  <columnConstraints>
-    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
-  </columnConstraints>
-  <rowConstraints>
-    <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
-  </rowConstraints>
 </GridPane>
