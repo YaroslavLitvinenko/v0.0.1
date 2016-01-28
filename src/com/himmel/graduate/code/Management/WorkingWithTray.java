@@ -58,6 +58,7 @@ public class WorkingWithTray {
             exitItem.addActionListener(event -> {
                 Platform.exit();
                 tray.remove(trayIcon);
+                System.exit(0);//TODO cделать нормальный выход
             });
 
             //создание всплывающео меню

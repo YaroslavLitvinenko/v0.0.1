@@ -77,4 +77,12 @@ public class DBConnect implements Runnable {
             e.printStackTrace();
         }
     }
+
+    public ObservableList<MyFile> getDataOfFile (){
+        return fileData;
+    }
+
+    public ObservableList<MyFolder> getDataOfFolder (){
+        return folderData;
+    }
 }

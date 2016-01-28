@@ -1,6 +1,7 @@
 package com.himmel.graduate.code.Management;
 
 import com.himmel.graduate.code.DB.DBConnect;
+import com.himmel.graduate.code.GUI.Controller;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -14,7 +15,10 @@ public class Main extends Application {
     private final String APPLICATIO_NAME = "Graduate v0.0.1";
     private Stage stage;
 
+    //private final DBConnect db = new DBConnect();
+
     public static void main(String[] args) throws InterruptedException {
+        new Manager();
         launch(args);
         //new DBConnect();
     }
@@ -34,6 +38,7 @@ public class Main extends Application {
         primaryStage.setTitle(APPLICATIO_NAME);
         primaryStage.getIcons().add(new Image("com/himmel/graduate/images/image.png"));
         primaryStage.setScene(new Scene(root, 500, 300));
+        //Controller.setDB(db);
         showStage();
     }
 
