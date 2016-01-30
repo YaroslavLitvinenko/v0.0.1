@@ -8,6 +8,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
+import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
 //Стандартный GUI JavaFX
@@ -15,12 +16,14 @@ public class Main extends Application {
     private final String APPLICATIO_NAME = "Graduate v0.0.1";
     private Stage stage;
 
-    //private final DBConnect db = new DBConnect();
+    private Controller mainController;
+
+    //TODO //private final DBConnect db = new DBConnect();
 
     public static void main(String[] args) throws InterruptedException {
-        new Manager();
+        //TODO //new Manager();
         launch(args);
-        //new DBConnect();
+        //TODO //new DBConnect();
     }
 
     @Override
@@ -34,12 +37,14 @@ public class Main extends Application {
         new WorkingWithTray(this, APPLICATIO_NAME).addAplicationToTray();
 
         //Инициализация GUI
-        Parent root = FXMLLoader.load(getClass().getResource("/com/himmel/graduate/code/GUI/sample.fxml"));
+        FXMLLoader mainLoader = new FXMLLoader(getClass().getResource("/com/himmel/graduate/code/GUI/sample.fxml"));
+        primaryStage.setScene(new Scene(mainLoader.load(), 500, 300));
+        mainController = mainLoader.getController();
+        //mainController.setDB(db);
         primaryStage.setTitle(APPLICATIO_NAME);
         primaryStage.getIcons().add(new Image("com/himmel/graduate/images/image.png"));
-        primaryStage.setScene(new Scene(root, 500, 300));
-        //Controller.setDB(db);
         showStage();
+
     }
 
     //Позволяет правильно открывать окна

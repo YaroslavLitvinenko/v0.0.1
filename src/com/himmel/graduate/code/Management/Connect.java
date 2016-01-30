@@ -18,8 +18,6 @@ class Connect {
     private static final byte []md5Trur = "1bb23a583cf7b04cd0774c727465cec9".getBytes();
     //время сна между попытками установиь соединение
     private int timeSleep;
-    //Время сна между синхронизациями
-    private int timeSinc;
     //Потоки выполнения соединения с другими клиентами
     private Thread outSignall;
     private Thread inSignal;
@@ -33,11 +31,8 @@ class Connect {
     //Адрес клиента для установления соединения
     private InetAddress addressInput;
 
-    //TODO сделать обработку отсутствия подключения к интернету
-
-    public Connect (int timeSleep, int timeSinc){
+    public Connect (int timeSleep){
         this.timeSleep = timeSleep;
-        this.timeSinc = timeSinc;
 
         outSignall = new Thread(new Runnable() {
             @Override

@@ -9,19 +9,17 @@ import javafx.scene.layout.AnchorPane;
  * Created by Lyaro on 19.12.2015.
  */
 public class Controller {
-    private static DBConnect db;
-    public TextField test1;
     public AnchorPane devices;
     public AnchorPane data;
     public AnchorPane time;
     public AnchorPane langyage;
+    private DBConnect db;
 
-    public static void setDB (DBConnect DB){
+    public void setDB (DBConnect DB){
         db = DB;
     }
 
     public void initialize (){
-
     }
 
     public void newData(ActionEvent actionEvent) {

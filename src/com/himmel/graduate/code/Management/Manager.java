@@ -14,6 +14,6 @@ public class Manager implements Runnable {
     @Override
     public void run() {
         //5000 = 5 сек.
-        System.out.println(new Connect(5000, 0).getAddress());
+        System.out.println(new Connect(5000).getAddress());
     }
 }
