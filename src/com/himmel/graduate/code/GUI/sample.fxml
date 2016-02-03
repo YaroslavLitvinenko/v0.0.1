@@ -75,10 +75,13 @@
                             <Font size="20.0" />
                           </font>
                         </Label>
-                        <RadioButton layoutX="39.0" layoutY="51.0" mnemonicParsing="false" selected="true" text="1 час" />
-                        <RadioButton layoutX="39.0" layoutY="72.0" mnemonicParsing="false" text="2 часа" />
-                        <RadioButton layoutX="39.0" layoutY="93.0" mnemonicParsing="false" text="5 часов" />
-                        <RadioButton layoutX="39.0" layoutY="114.0" mnemonicParsing="false" text="24 часа" />
+                        <RadioButton layoutX="39.0" layoutY="51.0" mnemonicParsing="false" selected="true" text="1 час">
+                                       <toggleGroup>
+                                          <ToggleGroup fx:id="groupTime" />
+                                       </toggleGroup></RadioButton>
+                        <RadioButton layoutX="39.0" layoutY="72.0" mnemonicParsing="false" text="2 часа" toggleGroup="$groupTime" />
+                        <RadioButton layoutX="39.0" layoutY="93.0" mnemonicParsing="false" text="5 часов" toggleGroup="$groupTime" />
+                        <RadioButton layoutX="39.0" layoutY="114.0" mnemonicParsing="false" text="24 часа" toggleGroup="$groupTime" />
                         <Label layoutX="102.0" layoutY="164.0" text=":">
                           <font>
                             <Font size="20.0" />
@@ -93,14 +96,17 @@
                             <Font size="20.0" />
                           </font>
                         </Label>
-                        <RadioButton layoutX="22.0" layoutY="54.0" mnemonicParsing="false" text="English" />
-                        <RadioButton layoutX="22.0" layoutY="77.0" mnemonicParsing="false" text="Deutsch" />
-                        <RadioButton layoutX="22.0" layoutY="100.0" mnemonicParsing="false" text="Un français" />
-                        <RadioButton layoutX="22.0" layoutY="123.0" mnemonicParsing="false" selected="true" text="Русский" />
-                        <RadioButton layoutX="22.0" layoutY="146.0" mnemonicParsing="false" text="Українська" />
+                        <RadioButton layoutX="22.0" layoutY="54.0" mnemonicParsing="false" text="English">
+                                       <toggleGroup>
+                                          <ToggleGroup fx:id="groupLanguage" />
+                                       </toggleGroup></RadioButton>
+                        <RadioButton layoutX="22.0" layoutY="77.0" mnemonicParsing="false" text="Deutsch" toggleGroup="$groupLanguage" />
+                        <RadioButton layoutX="22.0" layoutY="100.0" mnemonicParsing="false" text="Un français" toggleGroup="$groupLanguage" />
+                        <RadioButton layoutX="22.0" layoutY="123.0" mnemonicParsing="false" selected="true" text="Русский" toggleGroup="$groupLanguage" />
+                        <RadioButton layoutX="22.0" layoutY="146.0" mnemonicParsing="false" text="Українська" toggleGroup="$groupLanguage" />
                       </children></AnchorPane>
                     <Button layoutX="6.0" layoutY="11.0" mnemonicParsing="false" onAction="#deviceAction" prefHeight="25.0" prefWidth="150.0" text="Устройства" />
-                    <Button layoutX="6.0" layoutY="36.0" mnemonicParsing="false" onAction="#dataAction" prefHeight="25.0" prefWidth="150.0" text="Файлы/Папки" />
+                    <Button layoutX="6.0" layoutY="36.0" mnemonicParsing="false" onAction="#dataAction" prefHeight="25.0" prefWidth="150.0" text="Папки" />
                     <Button layoutX="6.0" layoutY="61.0" mnemonicParsing="false" onAction="#timeAction" prefHeight="25.0" prefWidth="150.0" text="Время" />
                     <Button layoutX="6.0" layoutY="86.0" mnemonicParsing="false" onAction="#languageAction" prefHeight="25.0" prefWidth="150.0" text="Язык" />
                   </children>

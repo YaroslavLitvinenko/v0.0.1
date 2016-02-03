@@ -14,6 +14,11 @@ public class Manager implements Runnable {
     @Override
     public void run() {
         //5000 = 5 сек.
-        System.out.println(new Connect(5000).getAddress());
+        Connect connect = new Connect(5000);
+        connect.search();
+        MySocket mySocket = connect.getConnection();
+        if (mySocket.ClServ)
+            System.out.println("client " + mySocket.getInetAddress());
+        else System.out.println("server " + mySocket.getInetAddress());
     }
 }

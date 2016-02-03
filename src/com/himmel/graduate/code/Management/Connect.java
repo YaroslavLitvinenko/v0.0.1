@@ -1,8 +1,5 @@
 package com.himmel.graduate.code.Management;
 
-import javax.swing.*;
-import java.awt.*;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.*;
 import java.util.Arrays;
@@ -12,29 +9,36 @@ import java.util.StringTokenizer;
  * Created by Lyaro on 28.01.2016.
  */
 class Connect {
-    //номер порта
-    private static final int port = 8033;
+    //номера портов
+    private static final int PORT_UDP = 8033;
+    private static final int PORT_TCP = 8034;
     //код для подтверждения части программы
     private static final byte []md5Trur = "1bb23a583cf7b04cd0774c727465cec9".getBytes();
     //время сна между попытками установиь соединение
     private int timeSleep;
-    //Потоки выполнения соединения с другими клиентами
-    private Thread outSignall;
-    private Thread inSignal;
+    //Потоки выполнения поиска соединения с другими клиентами
+    private Thread outSignalUDP;
+    private Thread inSignalUDP;
+    //Поток оидания соединения от друго-го клиента
+    private Thread inSignalTCP;
 
     //последняя цифра IP текущего клиента
     private int countIP;
 
-    //Флаг для отключения широковещания
+    //Флаги для отключения широковещания
     private boolean flagOfBroadcast = true;
+    private boolean flagOfShipping = true;
 
     //Адрес клиента для установления соединения
     private InetAddress addressInput;
 
-    public Connect (int timeSleep){
+    //Сокет служащий для связи с клиентом
+    private MySocket socket;
+
+    public Connect(int timeSleep){
         this.timeSleep = timeSleep;
 
-        outSignall = new Thread(new Runnable() {
+        outSignalUDP = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -45,13 +49,10 @@ class Connect {
                         String myMask = st.nextToken() + "." + st.nextToken() + "." + st.nextToken() + ".";
                         countIP = Integer.valueOf(st.nextToken());
                         addr = InetAddress.getByName(myMask + "255");
-                        while (flagOfBroadcast){
-                            s.send(new DatagramPacket(md5Trur, md5Trur.length, addr, port));
-                            //JOptionPane.showMessageDialog(new Frame(),"packet isotput");
-                            System.out.println("packet isotput");
+                        while (flagOfShipping){
+                            s.send(new DatagramPacket(md5Trur, md5Trur.length, addr, PORT_UDP));
                             Thread.sleep(timeSleep);
                         }
-                        flagOfBroadcast = true;
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     } catch (UnknownHostException e) {
@@ -69,29 +70,33 @@ class Connect {
             }
         });
 
-        inSignal = new Thread(new Runnable() {
+        inSignalUDP = new Thread(new Runnable() {
             @Override
             public void run() {
                 byte data[] = new byte[md5Trur.length];
                 DatagramPacket packet = new DatagramPacket(data, data.length);
                 try {
-                    DatagramSocket s = new DatagramSocket(port);
+                    DatagramSocket s = new DatagramSocket(PORT_UDP);
+                    Socket bufSocket = new Socket();
                     try {
                         while (flagOfBroadcast){
                             s.receive(packet);
                             InetAddress possibleAddress = packet.getAddress();
                             //Если найден клиент выходим изпоиска
                             if (!possibleAddress.equals(InetAddress.getLocalHost()) && connectivity(possibleAddress) && Arrays.equals(data, md5Trur)){
-                                addressInput = possibleAddress;
+                                bufSocket = new Socket(InetAddress.getByName("127.0.0.1"), PORT_TCP);
+                                bufSocket.close();
+                                bufSocket = new Socket(possibleAddress, PORT_TCP);
+                                socket = new MySocket(possibleAddress, true);
                                 flagOfBroadcast = false;
                             }
                         }
-                        //JOptionPane.showMessageDialog(new Frame(),"packet input");
-                        System.out.println("Packet input");
                     } catch (SocketException e) {
                         e.printStackTrace();
                     } finally {
+                        flagOfShipping = flagOfBroadcast;
                         s.close();
+                        bufSocket.close();
                     }
                 }  catch (IOException e) {
                     e.printStackTrace();
@@ -108,16 +113,47 @@ class Connect {
             }
         });
 
-        outSignall.start();
-        inSignal.start();
+        inSignalTCP = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                InetAddress inetAddress;
+                ServerSocket serverSocket;
+                try {
+                    serverSocket = new ServerSocket(PORT_TCP, 1);
+                    try{
+                        inetAddress = serverSocket.accept().getInetAddress();
+                        if (!inetAddress.getHostName().equals(InetAddress.getByName("127.0.0.1").getHostAddress())) {
+                            socket = new MySocket(inetAddress, false);
+                        }
+                        flagOfBroadcast = false;
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } finally {
+                        serverSocket.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
-    public InetAddress getAddress (){
+    //Запуск потоков на поиск клиентов
+    public void search (){
+        flagOfBroadcast = true;
+        flagOfShipping = true;
+        outSignalUDP.start();
+        inSignalTCP.start();
+        inSignalUDP.start();
+    }
+
+    public MySocket getConnection (){
         try {
-            outSignall.join();
+            inSignalUDP.join();
+            inSignalTCP.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return addressInput;
+        return socket;
     }
 }

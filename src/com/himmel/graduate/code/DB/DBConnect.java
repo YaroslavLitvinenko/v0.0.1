@@ -1,7 +1,6 @@
 package com.himmel.graduate.code.DB;
 
-import com.himmel.graduate.code.DB.Data.MyFile;
-import com.himmel.graduate.code.DB.Data.MyFolder;
+import com.himmel.graduate.code.DB.Data.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -10,18 +9,18 @@ import java.sql.*;
 /**
  * Created by Lyaro on 20.12.2015.
  */
-public class DBConnect implements Runnable {
+class DBConnect implements Runnable {
+    ObservableList<MyFolder> folderData = FXCollections.observableArrayList();
+    ObservableList<MySetting> settingsData = FXCollections.observableArrayList();
+    Thread thread;
     private Connection conn;
-    private Statement statementForFile;
     private Statement statementForFolder;
-    private ResultSet resSet;
-
-    private ObservableList<MyFile> fileData = FXCollections.observableArrayList();
-    private ObservableList<MyFolder> folderData = FXCollections.observableArrayList();
+    private Statement statementForSettings;
 
     public DBConnect () {
         //Запуск нового потока
-        new Thread(this).start();
+        thread = new Thread(this);
+        thread.start();
     }
 
     //Запуск конструктора в новом потоке
@@ -40,28 +39,28 @@ public class DBConnect implements Runnable {
 
         //Создание необходимых таблиц
         try {
-            statementForFile = conn.createStatement();
             statementForFolder = conn.createStatement();
-
-            //Создание таблицы файлов
-            statementForFile.execute("CREATE TABLE if not exists 'File' ('id' INTEGER PRIMARY KEY AUTOINCREMENT, 'Path' STRING, 'md5' STRING);");
+            statementForSettings = conn.createStatement();
 
             //Создание таблицы папок
             statementForFolder.execute("CREATE TABLE if not exists 'Folder' ('id' INTEGER PRIMARY KEY AUTOINCREMENT, 'Path' STRING, 'md5' STRING);");
+
+            //Создание таблицы списка настроек
+            statementForSettings.execute("CREATE TABLE if not exists 'Settings' ('id' INTEGER PRIMARY KEY AUTOINCREMENT, 'Name' STRING, 'Value' STRING);");
         } catch (SQLException e) {
             System.err.println(e);
         }
 
-        new Thread(()->this.CreateAListOfFiles(statementForFile)).start();
+        new Thread(()->this.CreateAListOfSettings(statementForSettings)).start();
         CreateAListOfFolder(statementForFolder);
     }
 
     //Создание списка файлов
-    private void CreateAListOfFiles (Statement statement){
+    private void CreateAListOfSettings (Statement statement){
         try {
-            ResultSet resultSet = statement.executeQuery("SELECT * FROM File");
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM Settings");
             while(resultSet.next())
-                fileData.add(new MyFile (resultSet.getInt("id"), resultSet.getString("Path"), resultSet.getString("md5")));
+                settingsData.add(new MySetting(resultSet.getInt("id"), resultSet.getString("Name"), resultSet.getString("Value")));
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -78,11 +77,28 @@ public class DBConnect implements Runnable {
         }
     }
 
-    public ObservableList<MyFile> getDataOfFile (){
-        return fileData;
+    void newDataOfFolder (MyFolder folder){
+        String sql = "INSERT INTO Folder (Path, md5) VALUES ('";
+        sql+=folder.getPath()+"', '";
+        sql+=folder.getMd5()+"');";
+        try {
+            statementForFolder.execute(sql);
+            folderData.add(folder);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
-    public ObservableList<MyFolder> getDataOfFolder (){
+    ObservableList<MySetting> getDataOfSettings (){
+        return settingsData;
+    }
+    ObservableList<MyFolder> getDataOfFolder (){
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println();
         return folderData;
     }
 }
