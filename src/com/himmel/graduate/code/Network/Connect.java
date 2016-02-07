@@ -1,4 +1,4 @@
-package com.himmel.graduate.code.Management;
+package com.himmel.graduate.code.Network;
 
 import java.io.IOException;
 import java.net.*;
@@ -8,7 +8,11 @@ import java.util.StringTokenizer;
 /**
  * Created by Lyaro on 28.01.2016.
  */
-class Connect {
+public class Connect {
+
+    //TODO Доделать обработку исключени на TCP соединении
+    //TODO перед релизом убрать e.printStackTrace();
+
     //номера портов
     private static final int PORT_UDP = 8033;
     private static final int PORT_TCP = 8034;
@@ -147,6 +151,7 @@ class Connect {
         inSignalUDP.start();
     }
 
+    //Функция для возврата соединения из класса
     public MySocket getConnection (){
         try {
             inSignalUDP.join();

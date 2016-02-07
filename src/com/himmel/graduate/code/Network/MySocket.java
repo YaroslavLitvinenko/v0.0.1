@@ -1,4 +1,4 @@
-package com.himmel.graduate.code.Management;
+package com.himmel.graduate.code.Network;
 
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -7,7 +7,7 @@ import java.net.Socket;
 /**
  * Created by Lyaro on 03.02.2016.
  */
-class MySocket {
+public class MySocket {
     boolean ClServ;
 
     InetAddress inetAddress;

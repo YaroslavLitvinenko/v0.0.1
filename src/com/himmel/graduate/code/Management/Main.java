@@ -11,13 +11,13 @@ import javafx.stage.Stage;
 
 //Стандартный GUI JavaFX
 public class Main extends Application {
+    private static final DBManagmnet db = new DBManagmnet();
     private final String APPLICATIO_NAME = "Graduate v0.0.1";
-    private final DBManagmnet db = new DBManagmnet();
     private Stage stage;
     private Controller mainController;
 
     public static void main(String[] args) throws InterruptedException {
-        new Manager();
+        new Manager(db);
         //launch(args);
     }
 

@@ -1,5 +1,6 @@
 package com.himmel.graduate.code.DB;
 
+import com.himmel.graduate.code.DB.Data.MyFile;
 import com.himmel.graduate.code.DB.Data.MyFolder;
 import com.himmel.graduate.code.DB.Data.MySetting;
 import javafx.collections.ObservableList;
@@ -41,13 +42,17 @@ public class DBManagmnet extends DBConnect {
     }
 
     @Override
-    public ObservableList<MySetting> getDataOfSettings (){
+    public synchronized ObservableList<MySetting> getDataOfSettings (){
         return super.getDataOfSettings();
     }
 
     @Override
-    public ObservableList<MyFolder> getDataOfFolder (){
-        System.out.println();
+    public synchronized ObservableList<MyFolder> getDataOfFolder (){
         return super.getDataOfFolder();
+    }
+
+    @Override
+    public synchronized ObservableList<MyFile> getDataOfFile (){
+        return super.getDataOfFile();
     }
 }

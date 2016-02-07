@@ -11,16 +11,22 @@ import java.sql.*;
  */
 class DBConnect implements Runnable {
     ObservableList<MyFolder> folderData = FXCollections.observableArrayList();
+    ObservableList<MyFile> fileData = FXCollections.observableArrayList();
     ObservableList<MySetting> settingsData = FXCollections.observableArrayList();
-    Thread thread;
+
+    Thread mainThread;
+    Thread settingTread;
+    Thread fileThread;
+
     private Connection conn;
     private Statement statementForFolder;
+    private Statement statementForFile;
     private Statement statementForSettings;
 
     public DBConnect () {
         //Запуск нового потока
-        thread = new Thread(this);
-        thread.start();
+        mainThread = new Thread(this);
+        mainThread.start();
     }
 
     //Запуск конструктора в новом потоке
@@ -40,10 +46,14 @@ class DBConnect implements Runnable {
         //Создание необходимых таблиц
         try {
             statementForFolder = conn.createStatement();
+            statementForFile = conn.createStatement();
             statementForSettings = conn.createStatement();
 
             //Создание таблицы папок
             statementForFolder.execute("CREATE TABLE if not exists 'Folder' ('id' INTEGER PRIMARY KEY AUTOINCREMENT, 'Path' STRING, 'md5' STRING);");
+
+            //Создание таблицы файлов
+            statementForFolder.execute("CREATE TABLE if not exists 'File' ('id' INTEGER PRIMARY KEY AUTOINCREMENT, 'Path' STRING, 'md5' STRING);");
 
             //Создание таблицы списка настроек
             statementForSettings.execute("CREATE TABLE if not exists 'Settings' ('id' INTEGER PRIMARY KEY AUTOINCREMENT, 'Name' STRING, 'Value' STRING);");
@@ -51,7 +61,10 @@ class DBConnect implements Runnable {
             System.err.println(e);
         }
 
-        new Thread(()->this.CreateAListOfSettings(statementForSettings)).start();
+        settingTread = new Thread(()->this.CreateAListOfSettings(statementForSettings));
+        settingTread.start();
+        fileThread = new Thread(()->this.CreateAListOfFile(statementForFile));
+        fileThread.start();
         CreateAListOfFolder(statementForFolder);
     }
 
@@ -77,6 +90,17 @@ class DBConnect implements Runnable {
         }
     }
 
+    //Создание списка папок
+    private void CreateAListOfFile (Statement statement){
+        try {
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM File");
+            while(resultSet.next())
+                fileData.add(new MyFile(resultSet.getInt("id"), resultSet.getString("Path"), resultSet.getString("md5")));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     void newDataOfFolder (MyFolder folder){
         String sql = "INSERT INTO Folder (Path, md5) VALUES ('";
         sql+=folder.getPath()+"', '";
@@ -90,15 +114,27 @@ class DBConnect implements Runnable {
     }
 
     ObservableList<MySetting> getDataOfSettings (){
+        try {
+            settingTread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return settingsData;
     }
     ObservableList<MyFolder> getDataOfFolder (){
         try {
-            thread.join();
+            mainThread.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        System.out.println();
         return folderData;
+    }
+    ObservableList<MyFile> getDataOfFile (){
+        try {
+            fileThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return fileData;
     }
 }
