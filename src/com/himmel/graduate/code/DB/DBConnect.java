@@ -121,6 +121,7 @@ class DBConnect implements Runnable {
         }
         return settingsData;
     }
+
     ObservableList<MyFolder> getDataOfFolder (){
         try {
             mainThread.join();
@@ -129,6 +130,7 @@ class DBConnect implements Runnable {
         }
         return folderData;
     }
+
     ObservableList<MyFile> getDataOfFile (){
         try {
             fileThread.join();

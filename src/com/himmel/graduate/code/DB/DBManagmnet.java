@@ -20,6 +20,12 @@ public class DBManagmnet extends DBConnect {
     }
 
     public void newDataOfFolder (File file){
+        //Добавлене данных в базу
+        super.newDataOfFolder(new MyFolder(0, file.getPath(), md5));
+
+    }
+
+    public String getMD5 (File file){
         //Создание ключа md5
         MessageDigest messageDigest = null;
         byte[] digest = new byte[0];
@@ -37,8 +43,7 @@ public class DBManagmnet extends DBConnect {
             md5 = "0" + md5;
         }
 
-        //Добавлене данных в базу
-        super.newDataOfFolder(new MyFolder(0, file.getPath(), md5));
+        return md5;
     }
 
     @Override
