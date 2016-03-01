@@ -1,7 +1,5 @@
 package com.himmel.graduate.code.DB;
 
-import com.himmel.graduate.code.DB.Data.MyFile;
-import com.himmel.graduate.code.DB.Data.MyFolder;
 import com.himmel.graduate.code.DB.Data.MySetting;
 import javafx.collections.ObservableList;
 
@@ -9,6 +7,7 @@ import java.io.File;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 
 /**
  * Created by Lyaro on 30.01.2016.
@@ -17,12 +16,6 @@ public class DBManagmnet extends DBConnect {
 
     public DBManagmnet () {
         super();
-    }
-
-    public void newDataOfFolder (File file){
-        //Добавлене данных в базу
-        super.newDataOfFolder(new MyFolder(0, file.getPath(), md5));
-
     }
 
     public String getMD5 (File file){
@@ -46,18 +39,35 @@ public class DBManagmnet extends DBConnect {
         return md5;
     }
 
+    //Метод для соответствия состояния таблицы File, сотоянию фйлов в папке
+    public synchronized void updateDateOfFile (ArrayList<File> listOfFile, ArrayList<File> listDelFile) {
+        for(File file : listOfFile)
+            super.newDataOfFile(file);
+        for(File delFile : listDelFile)
+            super.delDataOfFile(delFile);
+    }
+
+    //Метод для соответствия состояния таблицы Folder, сотоянию папок в папке
+    public synchronized void updateDateOfFolder (ArrayList<File> listOfFolder, ArrayList<File> listDelFolder){
+        for (File folder : listOfFolder)
+            super.newDataOfFolder(folder);
+        for (File delFolder : listDelFolder)
+            super.delDataOfFolder(delFolder);
+    }
+
+
     @Override
     public synchronized ObservableList<MySetting> getDataOfSettings (){
         return super.getDataOfSettings();
     }
 
     @Override
-    public synchronized ObservableList<MyFolder> getDataOfFolder (){
+    public synchronized ObservableList<File> getDataOfFolder (){
         return super.getDataOfFolder();
     }
 
     @Override
-    public synchronized ObservableList<MyFile> getDataOfFile (){
+    public synchronized ObservableList<File> getDataOfFile (){
         return super.getDataOfFile();
     }
 }

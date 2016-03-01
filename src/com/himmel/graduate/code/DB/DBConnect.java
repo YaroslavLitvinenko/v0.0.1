@@ -4,14 +4,15 @@ import com.himmel.graduate.code.DB.Data.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
+import java.io.File;
 import java.sql.*;
 
 /**
  * Created by Lyaro on 20.12.2015.
  */
 class DBConnect implements Runnable {
-    ObservableList<MyFolder> folderData = FXCollections.observableArrayList();
-    ObservableList<MyFile> fileData = FXCollections.observableArrayList();
+    ObservableList<File> folderData = FXCollections.observableArrayList();
+    ObservableList<File> fileData = FXCollections.observableArrayList();
     ObservableList<MySetting> settingsData = FXCollections.observableArrayList();
 
     Thread mainThread;
@@ -50,10 +51,10 @@ class DBConnect implements Runnable {
             statementForSettings = conn.createStatement();
 
             //Создание таблицы папок
-            statementForFolder.execute("CREATE TABLE if not exists 'Folder' ('id' INTEGER PRIMARY KEY AUTOINCREMENT, 'Path' STRING, 'md5' STRING);");
+            statementForFolder.execute("CREATE TABLE Folder (id INTEGER PRIMARY KEY AUTOINCREMENT, Path STRING UNIQUE ON CONFLICT ABORTABORT);");
 
             //Создание таблицы файлов
-            statementForFolder.execute("CREATE TABLE if not exists 'File' ('id' INTEGER PRIMARY KEY AUTOINCREMENT, 'Path' STRING, 'md5' STRING);");
+            statementForFolder.execute("CREATE TABLE File (id INTEGER PRIMARY KEY AUTOINCREMENT, Path STRING UNIQUE ON CONFLICT IGNORE);");
 
             //Создание таблицы списка настроек
             statementForSettings.execute("CREATE TABLE if not exists 'Settings' ('id' INTEGER PRIMARY KEY AUTOINCREMENT, 'Name' STRING, 'Value' STRING);");
@@ -66,6 +67,52 @@ class DBConnect implements Runnable {
         fileThread = new Thread(()->this.CreateAListOfFile(statementForFile));
         fileThread.start();
         CreateAListOfFolder(statementForFolder);
+    }
+
+    //Добавление данных о файле
+    void newDataOfFile (File file){
+        String sql = "INSERT INTO File (Path) VALUES ('" + file.getPath() + "');";
+        try {
+            statementForFolder.execute(sql);
+            fileData.add(file);
+        } catch (SQLException e) {
+            if(e.getErrorCode()!=19)
+                e.printStackTrace();
+        }
+    }
+
+    //Удаление даннных о файле
+    void delDataOfFile (File file){
+        String sql = "DELETE FROM File WHERE Path='" + file.getPath() + "';";
+        try {
+            statementForFolder.execute(sql);
+            fileData.remove(file);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //Добавлене даннных о папке
+    void newDataOfFolder (File folder){
+        String sql = "INSERT INTO Folder (Path) VALUES ('" + folder.getPath() + "');";
+        try {
+            statementForFolder.execute(sql);
+            folderData.add(folder);
+        } catch (SQLException e) {
+            if(e.getErrorCode()!=19)
+                e.printStackTrace();
+        }
+    }
+
+    //Удфление даннных о папке
+    void delDataOfFolder (File file){
+        String sql = "DELETE FROM Folder WHERE Path='" + file.getPath() + "';";
+        try {
+            statementForFolder.execute(sql);
+            folderData.remove(file);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     //Создание списка файлов
@@ -84,7 +131,7 @@ class DBConnect implements Runnable {
         try {
             ResultSet resultSet = statement.executeQuery("SELECT * FROM Folder");
             while(resultSet.next())
-                folderData.add(new MyFolder(resultSet.getInt("id"), resultSet.getString("Path"), resultSet.getString("md5")));
+                folderData.add(new File(resultSet.getString("Path")));
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -95,24 +142,13 @@ class DBConnect implements Runnable {
         try {
             ResultSet resultSet = statement.executeQuery("SELECT * FROM File");
             while(resultSet.next())
-                fileData.add(new MyFile(resultSet.getInt("id"), resultSet.getString("Path"), resultSet.getString("md5")));
+                fileData.add(new File(resultSet.getString("Path")));
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    void newDataOfFolder (MyFolder folder){
-        String sql = "INSERT INTO Folder (Path, md5) VALUES ('";
-        sql+=folder.getPath()+"', '";
-        sql+=folder.getMd5()+"');";
-        try {
-            statementForFolder.execute(sql);
-            folderData.add(folder);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
+    //Возврат значений таблиц
     ObservableList<MySetting> getDataOfSettings (){
         try {
             settingTread.join();
@@ -122,7 +158,7 @@ class DBConnect implements Runnable {
         return settingsData;
     }
 
-    ObservableList<MyFolder> getDataOfFolder (){
+    ObservableList<File> getDataOfFolder (){
         try {
             mainThread.join();
         } catch (InterruptedException e) {
@@ -131,7 +167,7 @@ class DBConnect implements Runnable {
         return folderData;
     }
 
-    ObservableList<MyFile> getDataOfFile (){
+    ObservableList<File> getDataOfFile (){
         try {
             fileThread.join();
         } catch (InterruptedException e) {

@@ -1,9 +1,8 @@
 package com.himmel.graduate.code.Network.Client;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import com.himmel.graduate.code.FileSystem.FileManager;
+
+import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -17,23 +16,28 @@ public class Client implements Runnable {
     InetAddress address;
     Socket connection;
 
-    public Client (ArrayList<File> files, InetAddress address){
-        this.files = files;
+    ObjectOutputStream out;
+    ObjectInputStream in;
+
+    FileManager fileManager;
+
+    public Client (FileManager fileManager, InetAddress address){
+        out = null;
+        in = null;
+        this.fileManager = fileManager;
         this.address = address;
+        new Thread(this).start();
     }
 
 
     @Override
     public void run() {
-        ObjectOutputStream out;
-        ObjectInputStream in;
         int flag = 5;
         while (true) {
             try {
                 connection = new Socket(InetAddress.getLocalHost(), PORT_TCP);
                 out = new ObjectOutputStream(connection.getOutputStream());
                 in = new ObjectInputStream(connection.getInputStream());
-
             } catch (IOException e) {
                 e.printStackTrace();
                 //TODO Допилить проверку
@@ -50,5 +54,18 @@ public class Client implements Runnable {
             }
 
         }
+    }
+
+    public Object sendMasage (Object object){
+        try {
+            out.flush();
+            out.writeObject(object);
+            return in.readObject();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return "Error";
     }
 }
