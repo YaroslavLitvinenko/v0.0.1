@@ -27,6 +27,8 @@ public class FileManager implements Runnable {
     //Переменная для доступа к БД
     private DBManagmnet db;
 
+    //TODO Изменить списки, удалять весь путь до папки назначения
+
     public FileManager (DBManagmnet db){
         //TODO Удалить сон
         try {
@@ -52,14 +54,15 @@ public class FileManager implements Runnable {
                 //Метод вызывается при обращении к файлу
                 @Override
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attr) {
-                    listNewFiles.add(file.toFile());
+                    listNewFiles.add(new File(file.toString().substring(mainFolder.getPath().length()+1, file.toString().length())));
                     //System.out.println(" (" + attr.size() + " bytes)");
                     return FileVisitResult.CONTINUE;
                 }
 
                 //Метод вызывается при обращении к папке
                 public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
-                    listNewFolders.add(dir.toFile());
+                    if (!dir.toString().equals(mainFolder.getPath()))
+                        listNewFolders.add(new File(dir.toString().substring(mainFolder.getPath().length()+1, dir.toString().length())));
                     //System.out.format("Directory: %s%n", dir);
                     return FileVisitResult.CONTINUE;
                 }
@@ -68,7 +71,7 @@ public class FileManager implements Runnable {
             e.printStackTrace();
         }
         //Создание списка удаленных файлов и папок путем удаленя из старых файлов и папок новых
-        listNewFolders.remove(new File(db.getDataOfSettings().get(0).getValue()));
+        //listNewFolders.remove(new File(db.getDataOfSettings().get(0).getValue()));
         listDelFolders.removeAll(listNewFolders);
         listDelFiles.removeAll(listNewFiles);
         db.updateDateOfFolder(listNewFolders, listDelFolders);
@@ -105,6 +108,22 @@ public class FileManager implements Runnable {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public void deleteFiles (String name){
+
+    }
+
+    public void deleteFolders (String name){
+
+    }
+
+    public void addFolders (String name){
+
+    }
+
+    public void addFiles (String name, ArrayList<Byte> data){
+
     }
 }
 

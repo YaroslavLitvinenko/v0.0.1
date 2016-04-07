@@ -57,6 +57,7 @@ public class Connect {
                             s.send(new DatagramPacket(md5Trur, md5Trur.length, addr, PORT_UDP));
                             Thread.sleep(timeSleep);
                         }
+                        int a = new Integer(5);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     } catch (UnknownHostException e) {
@@ -88,9 +89,11 @@ public class Connect {
                             InetAddress possibleAddress = packet.getAddress();
                             //Если найден клиент выходим изпоиска
                             if (!possibleAddress.equals(InetAddress.getLocalHost()) && connectivity(possibleAddress) && Arrays.equals(data, md5Trur)){
+                                //Прекращение работы потока ожидающео связь от клиента
                                 bufSocket = new Socket(InetAddress.getByName("127.0.0.1"), PORT_TCP);
                                 bufSocket.close();
                                 bufSocket = new Socket(possibleAddress, PORT_TCP);
+                                //Сохранение информации о клиенте
                                 socket = new MySocket(possibleAddress, true);
                                 flagOfBroadcast = false;
                             }

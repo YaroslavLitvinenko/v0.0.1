@@ -8,6 +8,8 @@ import com.himmel.graduate.code.Network.Connect;
 import com.himmel.graduate.code.Network.MySocket;
 
 import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 /**
@@ -33,8 +35,10 @@ public class Manager implements Runnable {
         connect.search();
         fileManager = new FileManager(db);
         MySocket socket = connect.getConnection();
-        if (socket.isClServ())
-            new Client(fileManager, socket.getInetAddress());
-        else new Server();
+        if (socket.isClServ()){
+            Client client = new Client(fileManager, socket.getInetAddress());
+        }
+        else new Server(fileManager);
+
     }
 }
