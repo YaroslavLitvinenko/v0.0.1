@@ -14,6 +14,7 @@ class DBConnect implements Runnable {
     ObservableList<File> folderData = FXCollections.observableArrayList();
     ObservableList<File> fileData = FXCollections.observableArrayList();
     ObservableList<MySetting> settingsData = FXCollections.observableArrayList();
+    ObservableList<MyFile> myFileData = FXCollections.observableArrayList();
 
     Thread mainThread;
     Thread settingTread;
@@ -51,10 +52,10 @@ class DBConnect implements Runnable {
             statementForSettings = conn.createStatement();
 
             //Создание таблицы папок
-            statementForFolder.execute("CREATE TABLE Folder (id INTEGER PRIMARY KEY AUTOINCREMENT, Path STRING UNIQUE ON CONFLICT ABORTABORT);");
+            statementForFolder.execute("CREATE TABLE if not exists 'Folder' (id INTEGER PRIMARY KEY AUTOINCREMENT, Path STRING UNIQUE ON CONFLICT ABORTABORT);");
 
             //Создание таблицы файлов
-            statementForFolder.execute("CREATE TABLE File (id INTEGER PRIMARY KEY AUTOINCREMENT, Path STRING UNIQUE ON CONFLICT IGNORE);");
+            statementForFolder.execute("CREATE TABLE if not exists 'File' (id INTEGER PRIMARY KEY AUTOINCREMENT, Path STRING UNIQUE ON CONFLICT IGNORE, dateLastChanges STRING (20), dateHash STRING (20));");
 
             //Создание таблицы списка настроек
             statementForSettings.execute("CREATE TABLE if not exists 'Settings' ('id' INTEGER PRIMARY KEY AUTOINCREMENT, 'Name' STRING, 'Value' STRING);");
@@ -64,17 +65,46 @@ class DBConnect implements Runnable {
 
         settingTread = new Thread(()->this.CreateAListOfSettings(statementForSettings));
         settingTread.start();
-        fileThread = new Thread(()->this.CreateAListOfFile(statementForFile));
+        fileThread = new Thread(()->this.CreateAListOfFiles(statementForFile));
         fileThread.start();
-        CreateAListOfFolder(statementForFolder);
+        CreateAListOfFolders(statementForFolder);
     }
 
     //Добавление данных о файле
     void newDataOfFile (File file){
-        String sql = "INSERT INTO File (Path) VALUES ('" + file.getPath() + "');";
+        File buf = new File (settingsData.get(0).getValue() + "\\" + file.getPath());
+        newDataOfFile(new MyFile(0, file.getPath(), MyFile.SIMPLE_DATE_FORMAT.format(new java.util.Date(buf.lastModified())),
+                MyFile.SIMPLE_DATE_FORMAT.format(new java.util.Date(buf.lastModified()))));
+    }
+
+    //Добавление данных о файле
+    void newDataOfFile (MyFile file){
         try {
+            ResultSet resultSet = statementForFile.executeQuery("SELECT * FROM File WHERE Path = '" + file.getPath() + "';");
+            MyFile buf = new MyFile(file);
+            buf.setPath(settingsData.get(0).getValue() + "\\" + file.getPath());
+            String sql = "";
+            if (resultSet.next()){
+                if (!resultSet.getString("dateLastChanges").equals(MyFile.SIMPLE_DATE_FORMAT.format(buf.getDateLastChanges()))) {
+                    sql = "UPDATE File SET dateLastChanges='" +  MyFile.SIMPLE_DATE_FORMAT.format(buf.getDateLastChanges());
+                    sql+="', dateHash='";
+                    sql+= MyFile.SIMPLE_DATE_FORMAT.format(buf.getDateLastChanges());
+                    sql+="' WHERE Path='" + file.getPath() + "';";
+                    buf = myFileData.get(myFileData.indexOf(file));
+                    buf.setDateLastChanges(file.getDateLastChanges());
+                    buf.setDateHash(file.getDateHash());
+                } else return;
+            } else {
+                sql = "INSERT INTO File (Path, dateLastChanges, dateHash) VALUES ('" + file.getPath() + "', '";
+                sql+= MyFile.SIMPLE_DATE_FORMAT.format(buf.getDateLastChanges());
+                sql+="', '";
+                sql+=MyFile.SIMPLE_DATE_FORMAT.format(buf.getDateHash());
+                sql+="');";
+
+                fileData.add(new File (file.getPath()));
+                myFileData.add(file);
+            }
             statementForFolder.execute(sql);
-            fileData.add(file);
         } catch (SQLException e) {
             if(e.getErrorCode()!=19)
                 e.printStackTrace();
@@ -86,7 +116,14 @@ class DBConnect implements Runnable {
         String sql = "DELETE FROM File WHERE Path='" + file.getPath() + "';";
         try {
             statementForFolder.execute(sql);
+            for (int i = 0; i < fileData.size(); i++) {
+                if (fileData.get(i).getPath().equals(file.getPath())) {
+                    fileData.remove(i);
+                    myFileData.remove(i);
+                }
+            }
             fileData.remove(file);
+            myFileData.remove(new MyFile(file.getPath()));
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -102,17 +139,21 @@ class DBConnect implements Runnable {
             if(e.getErrorCode()!=19)
                 e.printStackTrace();
         }
+        folderData.add(folder);
     }
 
-    //Удфление даннных о папке
-    void delDataOfFolder (File file){
-        String sql = "DELETE FROM Folder WHERE Path='" + file.getPath() + "';";
+    //Удfление даннных о папке
+    void delDataOfFolder (File folder){
+        String sql = "DELETE FROM Folder WHERE Path='" + folder.getPath() + "';";
         try {
             statementForFolder.execute(sql);
-            folderData.remove(file);
+            for (int i = 0; i < folderData.size(); i++)
+                if (fileData.get(i).getPath().equals(folder.getPath()))
+                    folderData.remove(i);
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        folderData.remove(folder);
     }
 
     //Создание списка файлов
@@ -127,7 +168,7 @@ class DBConnect implements Runnable {
     }
 
     //Создание списка папок
-    private void CreateAListOfFolder (Statement statement){
+    private void CreateAListOfFolders (Statement statement){
         try {
             ResultSet resultSet = statement.executeQuery("SELECT * FROM Folder");
             while(resultSet.next())
@@ -137,12 +178,30 @@ class DBConnect implements Runnable {
         }
     }
 
-    //Создание списка папок
-    private void CreateAListOfFile (Statement statement){
+    //Создание списка файлов
+    private void CreateAListOfFiles (Statement statement){
         try {
             ResultSet resultSet = statement.executeQuery("SELECT * FROM File");
-            while(resultSet.next())
+            while (resultSet.next()) {
                 fileData.add(new File(resultSet.getString("Path")));
+                myFileData.add(new MyFile(resultSet.getInt("id"), resultSet.getString("Path"), resultSet.getString("dateLastChanges"), resultSet.getString("dateHash")));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //Возрат значение из списка, по данным о пути файла
+    MyFile getDataOfFile(MyFile file) {
+        return myFileData.get(myFileData.indexOf(file));
+    }
+
+    void setSetting (MySetting setting) {
+        try {
+            String sql = "UPDATE Settings SET Value='" +  setting.getValue();
+            sql+="' WHERE Name='" + setting.getName() + "';";
+            statementForFolder.execute(sql);
+            settingsData.get(setting.getId()).setValue(setting.getValue());
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -158,7 +217,7 @@ class DBConnect implements Runnable {
         return settingsData;
     }
 
-    ObservableList<File> getDataOfFolder (){
+    ObservableList<File> getDataOfFolders (){
         try {
             mainThread.join();
         } catch (InterruptedException e) {
@@ -167,12 +226,21 @@ class DBConnect implements Runnable {
         return folderData;
     }
 
-    ObservableList<File> getDataOfFile (){
+    ObservableList<File> getDataOfFiles (){
         try {
             fileThread.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         return fileData;
+    }
+
+    ObservableList<MyFile> getDataOfMyFiles () {
+        try {
+            fileThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return myFileData;
     }
 }

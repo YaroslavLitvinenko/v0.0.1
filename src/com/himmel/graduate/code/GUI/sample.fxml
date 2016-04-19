@@ -40,7 +40,7 @@
               <content>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                   <children>
-                    <AnchorPane fx:id="devices" prefHeight="240.0" prefWidth="343.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="157.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <AnchorPane fx:id="devices" prefHeight="240.0" prefWidth="343.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="157.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                       <children>
                         <TableView fx:id="devicesTable" layoutX="8.0" layoutY="7.0" prefHeight="240.0" prefWidth="250.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="94.0" AnchorPane.topAnchor="0.0">
                           <columns>
@@ -51,9 +51,10 @@
                         <Button layoutX="260.0" layoutY="49.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="69.0" text="Удалить" />
                       </children>
                     </AnchorPane>
-                    <AnchorPane fx:id="data" layoutX="157.0" layoutY="14.0" prefHeight="240.0" prefWidth="343.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="157.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <AnchorPane fx:id="data" layoutX="157.0" layoutY="14.0" prefHeight="240.0" prefWidth="343.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="157.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                       <children>
-                        <Button layoutX="260.0" layoutY="49.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="69.0" text="Удалить" />
+                        <Button layoutX="175.0" layoutY="49.0" mnemonicParsing="false" onAction="#newFolderOfSync" prefHeight="25.0" prefWidth="154.0" text="Выбрать другую папку" />
+                                    <TextField fx:id="pathToFile" editable="false" layoutX="11.0" layoutY="11.0" prefHeight="25.0" prefWidth="319.0" />
                       </children></AnchorPane>
                     <AnchorPane fx:id="time" layoutX="157.0" layoutY="14.0" prefHeight="240.0" prefWidth="343.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="157.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                       <children>

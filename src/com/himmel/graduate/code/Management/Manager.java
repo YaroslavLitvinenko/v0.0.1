@@ -31,14 +31,14 @@ public class Manager implements Runnable {
     @Override
     public void run() {
         //5000 = 5 сек.
-        connect = new Connect(5000);
-        connect.search();
-        fileManager = new FileManager(db);
-        MySocket socket = connect.getConnection();
-        if (socket.isClServ()){
-            Client client = new Client(fileManager, socket.getInetAddress());
-        }
-        else new Server(fileManager);
+        //connect = new Connect(5000);
+        //connect.search();
+        //fileManager = new FileManager(db);
+        //MySocket socket = connect.getConnection();
+        //if (socket.isClServ()){
+        //    Client client = new Client(fileManager, socket.getInetAddress());
+        //}
+        //else new Server(fileManager);
 
     }
 }

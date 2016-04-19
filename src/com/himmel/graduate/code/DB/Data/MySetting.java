@@ -50,4 +50,8 @@ public class MySetting {
     public StringProperty valueProperty() {
         return value;
     }
+
+    public boolean equals (Object o) {
+        return this.name.equals(((MySetting) o).name);
+    }
 }

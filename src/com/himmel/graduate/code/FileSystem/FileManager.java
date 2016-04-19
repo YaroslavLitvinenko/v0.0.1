@@ -3,12 +3,12 @@ package com.himmel.graduate.code.FileSystem;
 import com.himmel.graduate.code.DB.DBManagmnet;
 import com.himmel.graduate.code.DB.Data.*;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 
 /**
  * Created by Lyaro on 06.02.2016.
@@ -21,6 +21,7 @@ public class FileManager implements Runnable {
     //Список файлов и папк на диске
     private ArrayList<File> listNewFolders;
     private ArrayList<File> listNewFiles;
+    private ArrayList<MyFile> listNewMyFiles;
     //Список созданнных файлов и папок
     private Thread thread;
 
@@ -39,8 +40,8 @@ public class FileManager implements Runnable {
         this.db = db;
         listNewFolders = new ArrayList<File>();
         listNewFiles = new ArrayList<File>();
-        listDelFolders = new ArrayList<File>(db.getDataOfFolder());
-        listDelFiles = new ArrayList<File>(db.getDataOfFile());
+        listDelFolders = new ArrayList<File>(db.getDataOfFolders());
+        listDelFiles = new ArrayList<File>(db.getDataOfFiles());
         mainFolder = new File(db.getDataOfSettings().get(0).getValue());
         thread = new Thread(this);
         thread.start();
@@ -72,22 +73,20 @@ public class FileManager implements Runnable {
         }
         //Создание списка удаленных файлов и папок путем удаленя из старых файлов и папок новых
         //listNewFolders.remove(new File(db.getDataOfSettings().get(0).getValue()));
+        //TODO переделать операции с удаленными объектами, все покрашется если устройство давно не синхронизилось
         listDelFolders.removeAll(listNewFolders);
         listDelFiles.removeAll(listNewFiles);
-        db.updateDateOfFolder(listNewFolders, listDelFolders);
-        db.updateDateOfFile(listNewFiles, listDelFiles);
+        db.updateDateOfFolders(listNewFolders, listDelFolders);
+        db.updateDateOfFiles(listNewFiles, listDelFiles);
+
+        //Создание списков новых файлов для передачи
+        listNewMyFiles = new ArrayList<MyFile> (db.getDataOfMyFiles());
     }
 
     //Возврат списков состояния папки
-
     public ArrayList<File> getListNewFolders (){
         threadIsOff();
         return listNewFolders;
-    }
-
-    public ArrayList<File> getListNewFiles (){
-        threadIsOff();
-        return listNewFiles;
     }
 
     public ArrayList<File> getListDelFolders () {
@@ -100,7 +99,12 @@ public class FileManager implements Runnable {
         return listDelFiles;
     }
 
-    private boolean threadIsOff (){
+    public ArrayList<MyFile> getListNewFiles (){
+        threadIsOff();
+        return listNewMyFiles;
+    }
+
+    public boolean threadIsOff (){
         try {
             thread.join();
             return true;
@@ -110,20 +114,78 @@ public class FileManager implements Runnable {
         }
     }
 
+    //Управление файловой сстемой
     public void deleteFiles (String name){
-
+        //TODO из списков файлы не удал.
+        new File(mainFolder + " " + name).delete();
+        db.delDataOfFile(new File (name));
     }
 
     public void deleteFolders (String name){
-
+        //TODO из списков папки не удал.
+        new File(mainFolder + " " + name).delete();
+        db.delDataOfFolder(new File(name));
     }
 
     public void addFolders (String name){
-
+        new File(mainFolder + "\\" + name).mkdirs();
+        db.newDataOfFolder(new File(name));
+        if (listNewFolders.indexOf(new File (name)) == -1) {
+            listNewFolders.add(new File(name));
+        }
     }
 
-    public void addFiles (String name, ArrayList<Byte> data){
+    //Проверка файла на синхронизированность, и наличие. Если файл синх. возвращ.
+    //NeedsSynchronization, если файл нет на компьютере, то DoesNotExist, если
+    //файл существует, но требует синхронизации - NeedsSynchronization
+    public boolean isFileSync (MyFile inFile) {
+        //Файл приходит с путем начиная с главной папки, для
+        //кросплатфрменности, на другом компе может быть в
+        //другом месе, в линуксе, по другому, файловая
+        //система, по этому добавляем путь до главной папки
+        if (new File(mainFolder + "\\" + inFile.getPath()).isFile()) {
+            MyFile myFile = db.getDataOfFile(inFile);
+            if (myFile.getDateHash().getTime() < inFile.getDateHash().getTime()) {
+                return false;
+            } else return true;
+        } else return false;
+    }
 
+    public void newFile (MyFile inFile, String inData) {
+        File file = new File (mainFolder + "\\" + inFile.getPath());
+        try  {
+            if (!file.isFile()) {
+                file.createNewFile();
+            }
+            FileOutputStream fileOutputStream = new FileOutputStream(file.getPath());
+            byte []data = inData.getBytes();
+            fileOutputStream.write(data);
+            fileOutputStream.close();
+            inFile.setDateLastChanges(new Date(file.lastModified()));
+            db.updDataOfFile(inFile);
+            if (listNewMyFiles.indexOf(inFile) == -1) {
+                listNewMyFiles.add(inFile);
+                if (listNewFiles.indexOf(new File (inFile.getPath())) == -1) {
+                    listNewFiles.add(new File (inFile.getPath()));
+                }
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String getFile (MyFile file) {
+        try (FileInputStream fileInputStream = new FileInputStream(mainFolder + "\\" + file.getPath())) {
+            byte []data = new byte[fileInputStream.available()];
+            fileInputStream.read(data);
+            String t =  new String(data);
+            return t;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "Error!";
     }
 }
 
