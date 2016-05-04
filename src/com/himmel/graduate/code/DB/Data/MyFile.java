@@ -1,5 +1,8 @@
 package com.himmel.graduate.code.DB.Data;
 
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+
 import java.io.File;
 import java.io.Serializable;
 import java.text.ParseException;
@@ -67,6 +70,10 @@ public class MyFile implements Serializable, Comparable {
 
     public void setDateHash(Date dateHash) {
         this.dateHash = dateHash;
+    }
+
+    public StringProperty pathProperty() {
+        return new SimpleStringProperty(path);
     }
 
     @Override

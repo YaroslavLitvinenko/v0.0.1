@@ -52,13 +52,18 @@ class DBConnect implements Runnable {
             statementForSettings = conn.createStatement();
 
             //Создание таблицы папок
-            statementForFolder.execute("CREATE TABLE if not exists 'Folder' (id INTEGER PRIMARY KEY AUTOINCREMENT, Path STRING UNIQUE ON CONFLICT ABORTABORT);");
+            statementForFolder.execute("CREATE TABLE IF NOT EXISTS Folder (id INTEGER PRIMARY KEY AUTOINCREMENT, Path STRING UNIQUE ON CONFLICT ABORT);");
 
             //Создание таблицы файлов
-            statementForFolder.execute("CREATE TABLE if not exists 'File' (id INTEGER PRIMARY KEY AUTOINCREMENT, Path STRING UNIQUE ON CONFLICT IGNORE, dateLastChanges STRING (20), dateHash STRING (20));");
+            statementForFolder.execute("CREATE TABLE if not exists 'File' (id INTEGER PRIMARY KEY AUTOINCREMENT, Path STRING UNIQUE ON CONFLICT ABORT, dateLastChanges STRING (20), dateHash STRING (20));");
 
             //Создание таблицы списка настроек
-            statementForSettings.execute("CREATE TABLE if not exists 'Settings' ('id' INTEGER PRIMARY KEY AUTOINCREMENT, 'Name' STRING, 'Value' STRING);");
+            statementForSettings.execute("CREATE TABLE if not exists 'Settings' ('id' INTEGER PRIMARY KEY AUTOINCREMENT, 'Name' STRING UNIQUE ON CONFLICT ABORT, 'Value' STRING);");
+            ResultSet resultSet = statementForSettings.executeQuery("SELECT * FROM Settings;");
+            if (!resultSet.next()) {
+                statementForSettings.execute("INSERT INTO 'Settings' ('Name', 'Value') VALUES ('mainPages', '');");
+                statementForSettings.execute("INSERT INTO 'Settings' ('Name', 'Value') VALUES ('language', '2');");
+            }
         } catch (SQLException e) {
             System.err.println(e);
         }
@@ -72,7 +77,7 @@ class DBConnect implements Runnable {
 
     //Добавление данных о файле
     void newDataOfFile (File file){
-        File buf = new File (settingsData.get(0).getValue() + "\\" + file.getPath());
+        File buf = new File (settingsData.get(0).getValue() + File.separator + file.getPath());
         newDataOfFile(new MyFile(0, file.getPath(), MyFile.SIMPLE_DATE_FORMAT.format(new java.util.Date(buf.lastModified())),
                 MyFile.SIMPLE_DATE_FORMAT.format(new java.util.Date(buf.lastModified()))));
     }
@@ -80,15 +85,17 @@ class DBConnect implements Runnable {
     //Добавление данных о файле
     void newDataOfFile (MyFile file){
         try {
+            System.out.println(file.getPath() + " " + file.getDateLastChanges() + " " + file.getDateHash());
             ResultSet resultSet = statementForFile.executeQuery("SELECT * FROM File WHERE Path = '" + file.getPath() + "';");
             MyFile buf = new MyFile(file);
-            buf.setPath(settingsData.get(0).getValue() + "\\" + file.getPath());
+            buf.setPath(settingsData.get(0).getValue() + File.separator + file.getPath());
             String sql = "";
             if (resultSet.next()){
                 if (!resultSet.getString("dateLastChanges").equals(MyFile.SIMPLE_DATE_FORMAT.format(buf.getDateLastChanges()))) {
                     sql = "UPDATE File SET dateLastChanges='" +  MyFile.SIMPLE_DATE_FORMAT.format(buf.getDateLastChanges());
                     sql+="', dateHash='";
-                    sql+= MyFile.SIMPLE_DATE_FORMAT.format(buf.getDateLastChanges());
+                    System.out.println(resultSet.getString("dateHash") + " = " + MyFile.SIMPLE_DATE_FORMAT.format(buf.getDateHash()));
+                    sql+= MyFile.SIMPLE_DATE_FORMAT.format(buf.getDateHash());
                     sql+="' WHERE Path='" + file.getPath() + "';";
                     buf = myFileData.get(myFileData.indexOf(file));
                     buf.setDateLastChanges(file.getDateLastChanges());

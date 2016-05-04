@@ -2,6 +2,7 @@ package com.himmel.graduate.code.Network.Client;
 
 import com.himmel.graduate.code.DB.Data.MyFile;
 import com.himmel.graduate.code.FileSystem.FileManager;
+import com.himmel.graduate.code.GUI.Controller;
 import com.himmel.graduate.code.Network.Packet;
 
 import java.io.*;
@@ -23,15 +24,28 @@ public class Client implements Runnable {
 
     private FileManager fileManager;
 
-    public Client (FileManager fileManager, InetAddress address){
+    private Thread thread;
+    private boolean f = false;
+
+    private Controller controller;
+    private int progres = 0;
+    private double cauntOfSyncFie = 0;
+
+    public Client (FileManager fileManager, InetAddress address, Controller controller){
         out = null;
         in = null;
         this.fileManager = fileManager;
         this.address = address;
         System.out.println("client");
-        new Thread(this).start();
+        this.controller = controller;
+        thread = new Thread(this);
+        thread.start();
     }
 
+    private void nextStep() {
+        progres ++;
+        controller.progres.setProgress(progres/cauntOfSyncFie);
+    }
 
     @Override
     public void run() {
@@ -39,51 +53,127 @@ public class Client implements Runnable {
         Packet inPack;
         while (0 < --flag) {
             try {
-                //Удаление удаленных файлов на сервере на этом пк
+                //Получение и отправка всех действий для полосы загрузки
+                cauntOfSyncFie += fileManager.getListDelFiles().size();
+                cauntOfSyncFie += fileManager.getListDelFolders().size();
+                cauntOfSyncFie += fileManager.getListNewFolders().size();
+                cauntOfSyncFie += fileManager.getListNewFiles().size();
+                connect(new Packet("cauntFileSync", cauntOfSyncFie));
+                cauntOfSyncFie = 5;
+                inPack = (Packet) in.readObject();
+                cauntOfSyncFie += (double) inPack.getData();
+                nextStep();
+                if (f) {
+                    connect(new Packet("exit"));
+                    in.readObject();
+                    connection.close();
+                    out.close();
+                    in.close();
+                    return;
+                }
+
+                //Удаление удаленных на сервере файлов, с этого ПК
                 connect(new Packet("getListDelFiles"));
                 inPack = (Packet) in.readObject();
                 System.out.println("List 'delFiles' return, count files for delete = " +
                         ((ArrayList<File>) inPack.getData()).size());
-                for (File file : (ArrayList<File>) inPack.getData())
-                    fileManager.deleteFiles(file.getName());
+                for (File file : (ArrayList<File>) inPack.getData()) {
+                    fileManager.deleteFiles(file.getPath());
+                    nextStep();
+                }
                 System.out.println("Files delete");
+                if (f) {
+                    connect(new Packet("exit"));
+                    in.readObject();
+                    connection.close();
+                    out.close();
+                    in.close();
+                    return;
+                }
 
-                //Удаление удаленных файлов на этом ПК с сервера
+                //Удаление удаленных файлов на этом ПК, с сервера
                 connect(new Packet("delFiles", fileManager.getListDelFiles()));
                 System.out.println("List files for delete is output, count of files = " +
                         fileManager.getListDelFiles().size());
                 in.readObject();
+                nextStep();
+                if (f) {
+                    connect(new Packet("exit"));
+                    in.readObject();
+                    connection.close();
+                    out.close();
+                    in.close();
+                    return;
+                }
 
-                //Удаление удаленных папок на сервере на этом пк
+                //Удаление удаленных папок на сервере с этого пк
                 connect(new Packet("getListDelFolders"));
                 inPack = (Packet) in.readObject();
                 System.out.println("List 'delFolders' return, count folders for delete = " +
                         ((ArrayList<File>) inPack.getData()).size());
-                for (File file : (ArrayList<File>) inPack.getData())
-                    fileManager.deleteFolders(file.getName());
+                for (File file : (ArrayList<File>) inPack.getData()) {
+                    fileManager.deleteFolders(file.getPath());
+                    nextStep();
+                }
                 System.out.println("Folders delete");
 
+                if (f) {
+                    connect(new Packet("exit"));
+                    in.readObject();
+                    connection.close();
+                    out.close();
+                    in.close();
+                    return;
+                }
                 //Удаление удаленных папок на этом ПК с сервера
                 connect(new Packet("delFolders", fileManager.getListDelFolders()));
                 in.readObject();
                 System.out.println("List folders for delete is output, count of folders = " +
                         fileManager.getListDelFolders().size());
+                nextStep();
 
+                if (f) {
+                    connect(new Packet("exit"));
+                    in.readObject();
+                    connection.close();
+                    out.close();
+                    in.close();
+                    return;
+                }
                 //Создание новых папок сервера на этом ПК
                 connect(new Packet("getListNayFolders"));
                 inPack = (Packet) in.readObject();
                 System.out.println("List 'nayFolders' return, count folders on server = " +
                         ((ArrayList<File>) inPack.getData()).size());
-                for (File file : (ArrayList<File>) inPack.getData())
-                    fileManager.addFolders(file.getName());
+                for (File file : (ArrayList<File>) inPack.getData()) {
+                    fileManager.addFolders(file.getPath());
+                    nextStep();
+                }
                 System.out.println("Folders created");
 
+                if (f) {
+                    connect(new Packet("exit"));
+                    in.readObject();
+                    connection.close();
+                    out.close();
+                    in.close();
+                    return;
+                }
                 //Создание новых папок на этом ПК на сервере
                 connect(new Packet("addFolders", fileManager.getListNewFolders()));
                 in.readObject();
                 System.out.println("List folders for created is output, count of folders = " +
                         fileManager.getListNewFolders().size());
+                nextStep();
 
+                if (f) {
+                    connect(new Packet("exit"));
+                    in.readObject();
+                    connection.close();
+                    out.close();
+                    in.close();
+                    return;
+                }
                 //Создание новых папок с сервера на этом ПК
                 connect(new Packet("getListNayFiles"));
                 inPack = (Packet) in.readObject();
@@ -96,9 +186,18 @@ public class Client implements Runnable {
                         inPack = (Packet) in.readObject();
                         fileManager.newFile((MyFile) inPack.getData(), inPack.getName());
                     }
+                    nextStep();
                 }
                 System.out.println("List 'nayFiles' return, count file on server = " + list.size());
 
+                if (f) {
+                    connect(new Packet("exit"));
+                    in.readObject();
+                    connection.close();
+                    out.close();
+                    in.close();
+                    return;
+                }
                 //Создание новых файлов на этом ПК на сервере
                 connect(new Packet("addFiles", fileManager.getListNewFiles()));
                 boolean f = true;
@@ -116,12 +215,13 @@ public class Client implements Runnable {
                 }
                 System.out.println("List file for created is output, count of file = " +
                         fileManager.getListNewFiles().size());
+                nextStep();
 
                 //Завершение операции синхронизации
                 connect(new Packet("exit"));
                 in.readObject();
 
-                //Запрос на вызов сборщика мусора, т.к. каждый раз ссылки на
+                //Запрос на вызов сборщика мусора, т.к. каждый раз ссылке на
                 //пакет присваеваются новые значения, но не утилизируюся старые
                 System.gc();
 
@@ -129,6 +229,7 @@ public class Client implements Runnable {
                 connection.close();
                 out.close();
                 in.close();
+                controller.progres.setProgress(0);
                 break;
             } catch (IOException e) {
                 e.printStackTrace();
@@ -149,5 +250,14 @@ public class Client implements Runnable {
         in = new ObjectInputStream(connection.getInputStream());
         out.flush();
         out.writeObject(packet);
+    }
+
+    public void syncOff () {
+        try {
+            f = true;
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

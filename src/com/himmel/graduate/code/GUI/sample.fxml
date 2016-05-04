@@ -23,60 +23,60 @@
         <ProgressBar fx:id="progres" layoutX="6.0" layoutY="277.0" prefHeight="18.0" prefWidth="489.0" progress="0.0" />
         <TabPane layoutX="6.0" prefHeight="269.0" prefWidth="500.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="31.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
           <tabs>
-            <Tab text="Главная">
+            <Tab fx:id="mainPage" text="Главная">
               <content>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="238.0" prefWidth="500.0">
                   <children>
                     <TableView fx:id="tableOut" layoutX="14.0" prefHeight="240.0" prefWidth="500.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                       <columns>
-                        <TableColumn fx:id="columnOut" prefWidth="499.0" text="Вывод" />
+                        <TableColumn fx:id="columnOut" prefWidth="498.0" text="Вывод" />
                       </columns>
                     </TableView>
                   </children>
                 </AnchorPane>
               </content>
             </Tab>
-            <Tab text="Настройки">
+            <Tab fx:id="settingsPage" text="Настройки">
               <content>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                   <children>
-                    <AnchorPane fx:id="devices" prefHeight="240.0" prefWidth="343.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="157.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <AnchorPane fx:id="devices" prefHeight="240.0" prefWidth="343.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="157.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                       <children>
                         <TableView fx:id="devicesTable" layoutX="8.0" layoutY="7.0" prefHeight="240.0" prefWidth="250.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="94.0" AnchorPane.topAnchor="0.0">
                           <columns>
                             <TableColumn fx:id="devicesColumn" prefWidth="247.0" text="Устройства для синхронизации" />
                           </columns>
                         </TableView>
-                        <Button layoutX="260.0" layoutY="14.0" mnemonicParsing="false" text="Добавить" />
-                        <Button layoutX="260.0" layoutY="49.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="69.0" text="Удалить" />
+                        <Button fx:id="butAddDevice" layoutX="260.0" layoutY="14.0" mnemonicParsing="false" onAction="#addDevice" text="Добавить" />
+                        <Button fx:id="btDelDevice" layoutX="260.0" layoutY="49.0" mnemonicParsing="false" onAction="#delDevice" prefHeight="25.0" prefWidth="69.0" text="Удалить" />
                       </children>
                     </AnchorPane>
-                    <AnchorPane fx:id="data" layoutX="157.0" layoutY="14.0" prefHeight="240.0" prefWidth="343.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="157.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <AnchorPane fx:id="data" layoutX="157.0" layoutY="14.0" prefHeight="240.0" prefWidth="343.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="157.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                       <children>
-                        <Button layoutX="175.0" layoutY="49.0" mnemonicParsing="false" onAction="#newFolderOfSync" prefHeight="25.0" prefWidth="154.0" text="Выбрать другую папку" />
+                        <Button fx:id="butAddNewFolder" layoutX="175.0" layoutY="49.0" mnemonicParsing="false" onAction="#newFolderOfSync" prefHeight="25.0" prefWidth="154.0" text="Выбрать другую папку" />
                                     <TextField fx:id="pathToFile" editable="false" layoutX="11.0" layoutY="11.0" prefHeight="25.0" prefWidth="319.0" />
                       </children></AnchorPane>
                     <AnchorPane fx:id="time" layoutX="157.0" layoutY="14.0" prefHeight="240.0" prefWidth="343.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="157.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                       <children>
-                        <Label layoutX="58.0" layoutY="140.0" text="Ввод времени">
+                        <Label fx:id="labelTime2" layoutX="58.0" layoutY="140.0" text="Ввод времени">
                           <font>
                             <Font size="14.0" />
                           </font>
                         </Label>
                         <TextField layoutX="57.0" layoutY="166.0" prefHeight="25.0" prefWidth="40.0" />
                         <TextField layoutX="111.0" layoutY="167.0" prefHeight="25.0" prefWidth="40.0" />
-                        <Label layoutX="32.0" layoutY="14.0" text="Ввод времени синхронизации">
+                        <Label fx:id="labelTime" layoutX="32.0" layoutY="14.0" text="Ввод времени синхронизации">
                           <font>
                             <Font size="20.0" />
                           </font>
                         </Label>
-                        <RadioButton layoutX="39.0" layoutY="51.0" mnemonicParsing="false" selected="true" text="1 час">
+                        <RadioButton fx:id="hour1" layoutX="39.0" layoutY="51.0" mnemonicParsing="false" selected="true" text="1 час">
                                        <toggleGroup>
                                           <ToggleGroup fx:id="groupTime" />
                                        </toggleGroup></RadioButton>
-                        <RadioButton layoutX="39.0" layoutY="72.0" mnemonicParsing="false" text="2 часа" toggleGroup="$groupTime" />
-                        <RadioButton layoutX="39.0" layoutY="93.0" mnemonicParsing="false" text="5 часов" toggleGroup="$groupTime" />
-                        <RadioButton layoutX="39.0" layoutY="114.0" mnemonicParsing="false" text="24 часа" toggleGroup="$groupTime" />
+                        <RadioButton fx:id="hour2" layoutX="39.0" layoutY="72.0" mnemonicParsing="false" text="2 часа" toggleGroup="$groupTime" />
+                        <RadioButton fx:id="hour5" layoutX="39.0" layoutY="93.0" mnemonicParsing="false" text="5 часов" toggleGroup="$groupTime" />
+                        <RadioButton fx:id="hour24" layoutX="39.0" layoutY="114.0" mnemonicParsing="false" text="24 часа" toggleGroup="$groupTime" />
                         <Label layoutX="102.0" layoutY="164.0" text=":">
                           <font>
                             <Font size="20.0" />
@@ -86,29 +86,27 @@
                     </AnchorPane>
                     <AnchorPane fx:id="langyage" layoutX="157.0" layoutY="14.0" prefHeight="240.0" prefWidth="343.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="157.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                       <children>
-                        <Label layoutX="109.0" layoutY="14.0" text="Выбор языка:">
+                        <Label fx:id="lableLanguage" layoutX="109.0" layoutY="14.0" text="Выбор языка:">
                           <font>
                             <Font size="20.0" />
                           </font>
                         </Label>
-                        <RadioButton layoutX="22.0" layoutY="54.0" mnemonicParsing="false" text="English">
+                        <RadioButton fx:id="eng" layoutX="22.0" layoutY="54.0" mnemonicParsing="false" onAction="#selectEnglish" text="English">
                                        <toggleGroup>
                                           <ToggleGroup fx:id="groupLanguage" />
                                        </toggleGroup></RadioButton>
-                        <RadioButton layoutX="22.0" layoutY="77.0" mnemonicParsing="false" text="Deutsch" toggleGroup="$groupLanguage" />
-                        <RadioButton layoutX="22.0" layoutY="100.0" mnemonicParsing="false" text="Un français" toggleGroup="$groupLanguage" />
-                        <RadioButton layoutX="22.0" layoutY="123.0" mnemonicParsing="false" selected="true" text="Русский" toggleGroup="$groupLanguage" />
-                        <RadioButton layoutX="22.0" layoutY="146.0" mnemonicParsing="false" text="Українська" toggleGroup="$groupLanguage" />
+                        <RadioButton fx:id="rus" layoutX="22.0" layoutY="85.0" mnemonicParsing="false" onAction="#selectRussen" selected="true" text="Русский" toggleGroup="$groupLanguage" />
+                        <RadioButton fx:id="uk" layoutX="22.0" layoutY="117.0" mnemonicParsing="false" onAction="#selectUkraine" text="Українська" toggleGroup="$groupLanguage" />
                       </children></AnchorPane>
-                    <Button layoutX="6.0" layoutY="11.0" mnemonicParsing="false" onAction="#deviceAction" prefHeight="25.0" prefWidth="150.0" text="Устройства" />
-                    <Button layoutX="6.0" layoutY="36.0" mnemonicParsing="false" onAction="#dataAction" prefHeight="25.0" prefWidth="150.0" text="Папки" />
-                    <Button layoutX="6.0" layoutY="61.0" mnemonicParsing="false" onAction="#timeAction" prefHeight="25.0" prefWidth="150.0" text="Время" />
-                    <Button layoutX="6.0" layoutY="86.0" mnemonicParsing="false" onAction="#languageAction" prefHeight="25.0" prefWidth="150.0" text="Язык" />
+                    <Button fx:id="butDevicws" layoutX="6.0" layoutY="11.0" mnemonicParsing="false" onAction="#deviceAction" prefHeight="25.0" prefWidth="150.0" text="Устройства" />
+                    <Button fx:id="butFolders" layoutX="6.0" layoutY="36.0" mnemonicParsing="false" onAction="#dataAction" prefHeight="25.0" prefWidth="150.0" text="Папки" />
+                    <Button fx:id="butTime" layoutX="6.0" layoutY="61.0" mnemonicParsing="false" onAction="#timeAction" prefHeight="25.0" prefWidth="150.0" text="Время" />
+                    <Button fx:id="butLanguage" layoutX="6.0" layoutY="86.0" mnemonicParsing="false" onAction="#languageAction" prefHeight="25.0" prefWidth="150.0" text="Язык" />
                   </children>
                 </AnchorPane>
               </content>
             </Tab>
-            <Tab text="О программе">
+            <Tab fx:id="aboutTheProgrammePage" text="О программе">
               <content>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
               </content>

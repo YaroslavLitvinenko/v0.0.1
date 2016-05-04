@@ -2,6 +2,7 @@ package com.himmel.graduate.code.FileSystem;
 
 import com.himmel.graduate.code.DB.DBManagmnet;
 import com.himmel.graduate.code.DB.Data.*;
+import com.himmel.graduate.code.GUI.Controller;
 
 import java.io.*;
 import java.nio.file.*;
@@ -25,18 +26,21 @@ public class FileManager implements Runnable {
     //Список созданнных файлов и папок
     private Thread thread;
 
+    private Controller controller;
+
     //Переменная для доступа к БД
     private DBManagmnet db;
 
     //TODO Изменить списки, удалять весь путь до папки назначения
 
-    public FileManager (DBManagmnet db){
+    public FileManager (DBManagmnet db, Controller controller){
         //TODO Удалить сон
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        this.controller = controller;
         this.db = db;
         listNewFolders = new ArrayList<File>();
         listNewFiles = new ArrayList<File>();
@@ -81,6 +85,8 @@ public class FileManager implements Runnable {
 
         //Создание списков новых файлов для передачи
         listNewMyFiles = new ArrayList<MyFile> (db.getDataOfMyFiles());
+
+        controller.listOut.addAll(listNewMyFiles);
     }
 
     //Возврат списков состояния папки
@@ -116,19 +122,24 @@ public class FileManager implements Runnable {
 
     //Управление файловой сстемой
     public void deleteFiles (String name){
-        //TODO из списков файлы не удал.
-        new File(mainFolder + " " + name).delete();
+        new File(mainFolder + File.separator + name).delete();
         db.delDataOfFile(new File (name));
+        //TODO Переделать списки
+        //Переделать эту херьню, сиски не связаны и нужно выкорчевывать вручную
+        listNewFiles.remove(listNewFiles.indexOf(new File (name)));
+        listNewMyFiles.remove(listNewMyFiles.indexOf(new MyFile(name)));
     }
 
     public void deleteFolders (String name){
-        //TODO из списков папки не удал.
-        new File(mainFolder + " " + name).delete();
+        new File(mainFolder + File.separator + name).delete();
         db.delDataOfFolder(new File(name));
+        //TODO Переделать списки
+        //Переделать эту херьню, сиски не связаны и нужно выкорчевывать вручную
+        listNewFolders.remove(new File(name));
     }
 
     public void addFolders (String name){
-        new File(mainFolder + "\\" + name).mkdirs();
+        new File(mainFolder + File.separator + name).mkdirs();
         db.newDataOfFolder(new File(name));
         if (listNewFolders.indexOf(new File (name)) == -1) {
             listNewFolders.add(new File(name));
@@ -143,7 +154,7 @@ public class FileManager implements Runnable {
         //кросплатфрменности, на другом компе может быть в
         //другом месе, в линуксе, по другому, файловая
         //система, по этому добавляем путь до главной папки
-        if (new File(mainFolder + "\\" + inFile.getPath()).isFile()) {
+        if (new File(mainFolder + File.separator + inFile.getPath()).isFile()) {
             MyFile myFile = db.getDataOfFile(inFile);
             if (myFile.getDateHash().getTime() < inFile.getDateHash().getTime()) {
                 return false;
@@ -152,7 +163,7 @@ public class FileManager implements Runnable {
     }
 
     public void newFile (MyFile inFile, String inData) {
-        File file = new File (mainFolder + "\\" + inFile.getPath());
+        File file = new File (mainFolder + File.separator + inFile.getPath());
         try  {
             if (!file.isFile()) {
                 file.createNewFile();
@@ -177,7 +188,7 @@ public class FileManager implements Runnable {
     }
 
     public String getFile (MyFile file) {
-        try (FileInputStream fileInputStream = new FileInputStream(mainFolder + "\\" + file.getPath())) {
+        try (FileInputStream fileInputStream = new FileInputStream(mainFolder + File.separator + file.getPath())) {
             byte []data = new byte[fileInputStream.available()];
             fileInputStream.read(data);
             String t =  new String(data);

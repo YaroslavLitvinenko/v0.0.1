@@ -5,9 +5,6 @@ import com.himmel.graduate.code.DB.Data.MySetting;
 import javafx.collections.ObservableList;
 
 import java.io.File;
-import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
 /**

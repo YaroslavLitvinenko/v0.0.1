@@ -15,9 +15,9 @@ public class Main extends Application {
     private final String APPLICATIO_NAME = "Graduate v0.0.1";
     private Stage stage;
     private Controller mainController;
+    private Manager manager;
 
     public static void main(String[] args) throws InterruptedException {
-        new Manager(db);
         launch(args);
     }
 
@@ -33,9 +33,11 @@ public class Main extends Application {
 
         //Инициализация GUI
         FXMLLoader mainLoader = new FXMLLoader(getClass().getResource("/com/himmel/graduate/code/GUI/sample.fxml"));
-        primaryStage.setScene(new Scene(mainLoader.load(), 500, 300));
+        primaryStage.setScene(new Scene(mainLoader.load()));
         mainController = mainLoader.getController();
+        manager = new Manager(db, mainController);
         mainController.setDB(db);
+        mainController.setManager(manager);
         mainController.setStage(primaryStage);
         primaryStage.setTitle(APPLICATIO_NAME);
         primaryStage.getIcons().add(new Image("com/himmel/graduate/images/image.png"));
