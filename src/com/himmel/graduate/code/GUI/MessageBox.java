@@ -6,6 +6,7 @@ import javafx.scene.control.Alert;
  * Created by Lyaro on 19.04.2016.
  */
 public class MessageBox {
+    //TODO Переделать в обычное окно для пременения
     private static final Alert windowForMassage = new Alert(Alert.AlertType.INFORMATION);
 
     public MessageBox() {

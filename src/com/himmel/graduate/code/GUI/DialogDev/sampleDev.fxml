@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="154.0" prefWidth="456.0" stylesheets="@../DarkTheme.css" xmlns="http://javafx.com/javafx/8" fx:controller="com.himmel.graduate.code.GUI.DialogDev.SampleDevController">
+   <children>
+      <Button layoutX="253.0" layoutY="114.0" mnemonicParsing="false" onAction="#ok" prefHeight="29.0" prefWidth="87.0" text="OK" />
+      <Button layoutX="355.0" layoutY="114.0" mnemonicParsing="false" onAction="#cancel" text="Cancel" />
+      <Label layoutX="10.0" layoutY="10.0" text="Введите mac-адрес необходимого устройства!" />
+      <Label layoutX="10.0" layoutY="54.0" text="mac:" />
+      <TextField fx:id="mac" layoutX="64.0" layoutY="57.0" prefHeight="30.0" prefWidth="378.0" />
+   </children>
+</AnchorPane>

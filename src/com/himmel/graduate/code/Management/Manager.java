@@ -65,8 +65,9 @@ public class Manager implements Runnable {
 
     @Override
     public void run() {
+        controller.listDevice.addAll(db.getDataOfDevice());
         //5000 = 5 сек.
-        connect = new Connect(5000);
+        connect = new Connect(5000, db);
         connect.search();
         fileManager = new FileManager(db, controller);
         MySocket socket = connect.getConnection();

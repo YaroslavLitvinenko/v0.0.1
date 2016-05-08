@@ -15,15 +15,18 @@ class DBConnect implements Runnable {
     ObservableList<File> fileData = FXCollections.observableArrayList();
     ObservableList<MySetting> settingsData = FXCollections.observableArrayList();
     ObservableList<MyFile> myFileData = FXCollections.observableArrayList();
+    ObservableList<String> deviceData = FXCollections.observableArrayList();
 
     Thread mainThread;
     Thread settingTread;
     Thread fileThread;
+    Thread otherThread;
 
     private Connection conn;
-    private Statement statementForFolder;
-    private Statement statementForFile;
-    private Statement statementForSettings;
+    private Statement statementForFolder = null;
+    private Statement statementForFile = null;
+    private Statement statementForSettings = null;
+    private Statement statementForOther = null;
 
     public DBConnect () {
         //Запуск нового потока
@@ -45,11 +48,13 @@ class DBConnect implements Runnable {
             e.printStackTrace();
         }
 
+
         //Создание необходимых таблиц
         try {
             statementForFolder = conn.createStatement();
             statementForFile = conn.createStatement();
             statementForSettings = conn.createStatement();
+            statementForOther = conn.createStatement();
 
             //Создание таблицы папок
             statementForFolder.execute("CREATE TABLE IF NOT EXISTS Folder (id INTEGER PRIMARY KEY AUTOINCREMENT, Path STRING UNIQUE ON CONFLICT ABORT);");
@@ -64,28 +69,46 @@ class DBConnect implements Runnable {
                 statementForSettings.execute("INSERT INTO 'Settings' ('Name', 'Value') VALUES ('mainPages', '');");
                 statementForSettings.execute("INSERT INTO 'Settings' ('Name', 'Value') VALUES ('language', '2');");
             }
+
+            //Создане всех остальных таблиц
+            //Создание таблицы устройств для синхронизации
+            statementForOther.execute("CREATE TABLE IF NOT EXISTS 'DeviceForSync' (id INTEGER PRIMARY KEY AUTOINCREMENT, MAC STRING UNIQUE ON CONFLICT ABORT);");
         } catch (SQLException e) {
             System.err.println(e);
+        } finally {
+            try {
+                if (statementForFolder != null)
+                    statementForFolder.close();
+                if (statementForFile != null)
+                    statementForFile.close();
+                if (statementForSettings != null)
+                    statementForSettings.close();
+                if (statementForOther != null)
+                    statementForOther.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
 
-        settingTread = new Thread(()->this.CreateAListOfSettings(statementForSettings));
+        settingTread = new Thread(() -> this.CreateAListOfSettings(statementForSettings));
         settingTread.start();
-        fileThread = new Thread(()->this.CreateAListOfFiles(statementForFile));
+        fileThread = new Thread(() -> this.CreateAListOfFiles(statementForFile));
         fileThread.start();
+        otherThread = new Thread(() -> this.CreateOtherList(statementForOther));
+        otherThread.start();
         CreateAListOfFolders(statementForFolder);
     }
 
     //Добавление данных о файле
-    void newDataOfFile (File file){
+    void newDataOfFile(File file) {
         File buf = new File (settingsData.get(0).getValue() + File.separator + file.getPath());
         newDataOfFile(new MyFile(0, file.getPath(), MyFile.SIMPLE_DATE_FORMAT.format(new java.util.Date(buf.lastModified())),
                 MyFile.SIMPLE_DATE_FORMAT.format(new java.util.Date(buf.lastModified()))));
     }
 
     //Добавление данных о файле
-    void newDataOfFile (MyFile file){
+    void newDataOfFile(MyFile file) {
         try {
-            System.out.println(file.getPath() + " " + file.getDateLastChanges() + " " + file.getDateHash());
             ResultSet resultSet = statementForFile.executeQuery("SELECT * FROM File WHERE Path = '" + file.getPath() + "';");
             MyFile buf = new MyFile(file);
             buf.setPath(settingsData.get(0).getValue() + File.separator + file.getPath());
@@ -94,7 +117,6 @@ class DBConnect implements Runnable {
                 if (!resultSet.getString("dateLastChanges").equals(MyFile.SIMPLE_DATE_FORMAT.format(buf.getDateLastChanges()))) {
                     sql = "UPDATE File SET dateLastChanges='" +  MyFile.SIMPLE_DATE_FORMAT.format(buf.getDateLastChanges());
                     sql+="', dateHash='";
-                    System.out.println(resultSet.getString("dateHash") + " = " + MyFile.SIMPLE_DATE_FORMAT.format(buf.getDateHash()));
                     sql+= MyFile.SIMPLE_DATE_FORMAT.format(buf.getDateHash());
                     sql+="' WHERE Path='" + file.getPath() + "';";
                     buf = myFileData.get(myFileData.indexOf(file));
@@ -119,7 +141,7 @@ class DBConnect implements Runnable {
     }
 
     //Удаление даннных о файле
-    void delDataOfFile (File file){
+    void delDataOfFile(File file) {
         String sql = "DELETE FROM File WHERE Path='" + file.getPath() + "';";
         try {
             statementForFolder.execute(sql);
@@ -137,7 +159,7 @@ class DBConnect implements Runnable {
     }
 
     //Добавлене даннных о папке
-    void newDataOfFolder (File folder){
+    void newDataOfFolder(File folder) {
         String sql = "INSERT INTO Folder (Path) VALUES ('" + folder.getPath() + "');";
         try {
             statementForFolder.execute(sql);
@@ -146,11 +168,10 @@ class DBConnect implements Runnable {
             if(e.getErrorCode()!=19)
                 e.printStackTrace();
         }
-        folderData.add(folder);
     }
 
     //Удfление даннных о папке
-    void delDataOfFolder (File folder){
+    void delDataOfFolder(File folder) {
         String sql = "DELETE FROM Folder WHERE Path='" + folder.getPath() + "';";
         try {
             statementForFolder.execute(sql);
@@ -163,8 +184,34 @@ class DBConnect implements Runnable {
         folderData.remove(folder);
     }
 
+    //Добавление данных об устройстве
+    void newDataOfDevices(String mac) {
+        String sql = "INSERT INTO DeviceForSync (MAC) VALUES ('" + mac + "');";
+        try {
+            statementForOther.execute(sql);
+            deviceData.add(mac);
+        } catch (SQLException e) {
+            if(e.getErrorCode()!=19)
+                e.printStackTrace();
+        }
+    }
+
+    //Удаление данных о девайсе
+    void delDataOfDvices(String mac) {
+        String sql = "DELETE FROM DeviceForSync WHERE MAC='" + mac + "';";
+        try {
+            statementForFolder.execute(sql);/*
+            for (int i = 0; i < deviceData.size(); i++)
+                if (deviceData.get(i).equals(mac))
+                    deviceData.remove(i);*/
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        deviceData.remove(mac);
+    }
+
     //Создание списка файлов
-    private void CreateAListOfSettings (Statement statement){
+    private void CreateAListOfSettings(Statement statement) {
         try {
             ResultSet resultSet = statement.executeQuery("SELECT * FROM Settings");
             while(resultSet.next())
@@ -175,7 +222,7 @@ class DBConnect implements Runnable {
     }
 
     //Создание списка папок
-    private void CreateAListOfFolders (Statement statement){
+    private void CreateAListOfFolders(Statement statement) {
         try {
             ResultSet resultSet = statement.executeQuery("SELECT * FROM Folder");
             while(resultSet.next())
@@ -186,12 +233,23 @@ class DBConnect implements Runnable {
     }
 
     //Создание списка файлов
-    private void CreateAListOfFiles (Statement statement){
+    private void CreateAListOfFiles(Statement statement) {
         try {
             ResultSet resultSet = statement.executeQuery("SELECT * FROM File");
             while (resultSet.next()) {
                 fileData.add(new File(resultSet.getString("Path")));
                 myFileData.add(new MyFile(resultSet.getInt("id"), resultSet.getString("Path"), resultSet.getString("dateLastChanges"), resultSet.getString("dateHash")));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void CreateOtherList(Statement statement) {
+        try {
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM DeviceForSync");
+            while (resultSet.next()) {
+                deviceData.add(resultSet.getString("MAC"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -242,12 +300,21 @@ class DBConnect implements Runnable {
         return fileData;
     }
 
-    ObservableList<MyFile> getDataOfMyFiles () {
+    ObservableList<MyFile> getDataOfMyFiles() {
         try {
             fileThread.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         return myFileData;
+    }
+
+    ObservableList<String> getDataOfDevice() {
+        try {
+            otherThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return deviceData;
     }
 }

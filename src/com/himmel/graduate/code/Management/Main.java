@@ -2,6 +2,7 @@ package com.himmel.graduate.code.Management;
 
 import com.himmel.graduate.code.DB.DBManagmnet;
 import com.himmel.graduate.code.GUI.Controller;
+import com.himmel.graduate.code.Network.Connect;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -11,7 +12,7 @@ import javafx.stage.Stage;
 
 //Стандартный GUI JavaFX
 public class Main extends Application {
-    private static final DBManagmnet db = new DBManagmnet();
+    public static final DBManagmnet db = new DBManagmnet();
     private final String APPLICATIO_NAME = "Graduate v0.0.1";
     private Stage stage;
     private Controller mainController;
