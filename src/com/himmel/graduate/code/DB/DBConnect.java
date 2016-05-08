@@ -15,8 +15,7 @@ class DBConnect implements Runnable {
     ObservableList<File> fileData = FXCollections.observableArrayList();
     ObservableList<MySetting> settingsData = FXCollections.observableArrayList();
     ObservableList<MyFile> myFileData = FXCollections.observableArrayList();
-    ObservableList<String> deviceData = FXCollections.observableArrayList();
-    ObservableList<String> syncData = FXCollections.observableArrayList();
+    ObservableList<Device> deviceData = FXCollections.observableArrayList();
 
     Thread mainThread;
     Thread settingTread;
@@ -48,8 +47,6 @@ class DBConnect implements Runnable {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
-
         //Создание необходимых таблиц
         try {
             statementForFolder = conn.createStatement();
@@ -72,11 +69,11 @@ class DBConnect implements Runnable {
             }
 
             //Создане всех остальных таблиц
-            //Создание таблицы устройств для синхронизации
-            statementForOther.execute("CREATE TABLE IF NOT EXISTS 'DeviceForSync' (id INTEGER PRIMARY KEY AUTOINCREMENT, MAC STRING UNIQUE ON CONFLICT ABORT);");
-
             //Создание таблицы с датами синхронизации
             statementForOther.execute("CREATE TABLE IF NOT EXISTS 'Synchronization' (id INTEGER PRIMARY KEY AUTOINCREMENT, Time STRING);");
+
+            //Создание таблицы устройств для синхронизации
+            statementForOther.execute("CREATE TABLE IF NOT EXISTS 'DeviceForSync' (id INTEGER PRIMARY KEY AUTOINCREMENT, MAC STRING UNIQUE ON CONFLICT ABORT, DateLastSync INTEGER REFERENCES Synchronization (id));");
         } catch (SQLException e) {
             System.err.println(e);
         } finally {
@@ -193,7 +190,9 @@ class DBConnect implements Runnable {
         String sql = "INSERT INTO DeviceForSync (MAC) VALUES ('" + mac + "');";
         try {
             statementForOther.execute(sql);
-            deviceData.add(mac);
+            ResultSet resultSet = statementForOther.executeQuery("select max(id)id from DeviceForSync");
+            resultSet.next();
+            deviceData.add(new Device(resultSet.getInt("id"), mac, 0));
         } catch (SQLException e) {
             if(e.getErrorCode()!=19)
                 e.printStackTrace();
@@ -204,14 +203,23 @@ class DBConnect implements Runnable {
     void delDataOfDvices(String mac) {
         String sql = "DELETE FROM DeviceForSync WHERE MAC='" + mac + "';";
         try {
-            statementForFolder.execute(sql);/*
-            for (int i = 0; i < deviceData.size(); i++)
-                if (deviceData.get(i).equals(mac))
-                    deviceData.remove(i);*/
+            statementForFolder.execute(sql);
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        deviceData.remove(mac);
+        deviceData.remove(new Device(mac));
+    }
+
+    void newSync(Device device, java.util.Date date) {
+        try {
+            statementForOther.execute("INSERT INTO 'Synchronization' ('TIME') VALUES ('" + MyFile.SIMPLE_DATE_FORMAT.format(date) + "');");
+            ResultSet resultSet = statementForOther.executeQuery("SELECT MAX(id)id FROM Synchronization");
+            resultSet.next();
+            device.setDate(resultSet.getInt("id"));
+            statementForOther.execute("UPDATE 'DeviceForSync' SET DateLastSync = " + device.getDate() + " WHERE id = " + device.getId() + ";");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     //Создание списка файлов
@@ -253,11 +261,7 @@ class DBConnect implements Runnable {
         try {
             ResultSet resultSet = statement.executeQuery("SELECT * FROM 'DeviceForSync'");
             while (resultSet.next()) {
-                deviceData.add(resultSet.getString("MAC"));
-            }
-            resultSet = statement.executeQuery("SELECT * FROM  'Synchronization'");
-            while (resultSet.next()) {
-                syncData.add(resultSet.getString("Time"));
+                deviceData.add(new Device(resultSet.getInt("id"), resultSet.getString("MAC"), resultSet.getInt("DateLastSync")));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -317,7 +321,7 @@ class DBConnect implements Runnable {
         return myFileData;
     }
 
-    ObservableList<String> getDataOfDevice() {
+    ObservableList<Device> getDataOfDevice() {
         try {
             otherThread.join();
         } catch (InterruptedException e) {
