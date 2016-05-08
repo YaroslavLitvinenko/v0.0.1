@@ -1,5 +1,6 @@
 package com.himmel.graduate.code.DB;
 
+import com.himmel.graduate.code.DB.Data.Device;
 import com.himmel.graduate.code.DB.Data.MyFile;
 import com.himmel.graduate.code.DB.Data.MySetting;
 import javafx.collections.ObservableList;
@@ -68,6 +69,11 @@ public class DBManagmnet extends DBConnect {
     }
 
     @Override
+    public synchronized void newSync(Device device, java.util.Date date) {
+        super.newSync(device, date);
+    }
+
+    @Override
     public synchronized ObservableList<MySetting> getDataOfSettings(){
         return super.getDataOfSettings();
     }
@@ -88,7 +94,7 @@ public class DBManagmnet extends DBConnect {
     }
 
     @Override
-    public synchronized ObservableList<String> getDataOfDevice() {
+    public synchronized ObservableList<Device> getDataOfDevice() {
         return super.getDataOfDevice();
     }
 

@@ -1,8 +1,11 @@
 package com.himmel.graduate.code.Network.Server;
 
+import com.himmel.graduate.code.DB.Data.Device;
 import com.himmel.graduate.code.DB.Data.MyFile;
 import com.himmel.graduate.code.FileSystem.FileManager;
 import com.himmel.graduate.code.GUI.Controller;
+import com.himmel.graduate.code.Management.Main;
+import com.himmel.graduate.code.Network.MySocket;
 import com.himmel.graduate.code.Network.Packet;
 import com.sun.org.apache.xpath.internal.SourceTree;
 
@@ -13,6 +16,7 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Created by Lyaro on 07.02.2016.
@@ -27,19 +31,21 @@ public class Server implements Runnable {
     private Socket connection;
     private ObjectOutputStream out;
     private ObjectInputStream in;
+    private Device device;
 
     private Controller controller;
     private int progres = 0;
     private double cauntOfSyncFie = 0;
 
 
-    public Server(FileManager fileManager, Controller controller){
+    public Server(FileManager fileManager, Controller controller, Device device){
         try {
             server = new ServerSocket(PORT_TCP, 1);
             this.controller = controller;
         } catch (IOException e) {
             e.printStackTrace();
         }
+        this.device = device;
         this.fileManager = fileManager;
         out = null;
         in = null;
@@ -76,7 +82,7 @@ public class Server implements Runnable {
                         cauntOfSyncFie += fileManager.getListNewFiles().size();
                         out.flush();
                         out.writeObject(new Packet("retCaunter", cauntOfSyncFie));
-                        cauntOfSyncFie = 5;
+                        cauntOfSyncFie = 6;
                         cauntOfSyncFie += (double)inPack.getData();
                         nextStep();
                         break;
@@ -160,9 +166,16 @@ public class Server implements Runnable {
                         out.flush();
                         out.writeObject(new Packet("thatsAll"));
                         break;
+                    case "time":
+                        System.out.println("COmand: time");
+                        Main.db.newSync(device, (Date) inPack.getData());
+                        out.flush();
+                        out.writeObject(new Packet("ok"));
+                        nextStep();
+                        break;
                     case "exit":
                         out.flush();
-                        out.writeObject("ok");
+                        out.writeObject(new Packet("ok"));
                         flag = false;
                         System.out.println("Comand: exit");
                         nextStep();

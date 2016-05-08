@@ -1,23 +1,26 @@
 package com.himmel.graduate.code.Network.Client;
 
+import com.himmel.graduate.code.DB.Data.Device;
 import com.himmel.graduate.code.DB.Data.MyFile;
 import com.himmel.graduate.code.FileSystem.FileManager;
 import com.himmel.graduate.code.GUI.Controller;
+import com.himmel.graduate.code.Network.MySocket;
 import com.himmel.graduate.code.Network.Packet;
 
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Created by Lyaro on 07.02.2016.
  */
 public class Client implements Runnable {
     private static final int PORT_TCP = 8034;
-    private ArrayList<File> files;
     private InetAddress address;
     private Socket connection;
+    private Device device;
 
     private ObjectOutputStream out;
     private ObjectInputStream in;
@@ -31,11 +34,12 @@ public class Client implements Runnable {
     private int progres = 0;
     private double cauntOfSyncFie = 0;
 
-    public Client (FileManager fileManager, InetAddress address, Controller controller){
+    public Client (FileManager fileManager, MySocket socket, Controller controller){
         out = null;
         in = null;
         this.fileManager = fileManager;
-        this.address = address;
+        this.address = socket.getInetAddress();
+        this.device = socket.getDevice();
         System.out.println("client");
         this.controller = controller;
         thread = new Thread(this);
@@ -59,7 +63,7 @@ public class Client implements Runnable {
                 cauntOfSyncFie += fileManager.getListNewFolders().size();
                 cauntOfSyncFie += fileManager.getListNewFiles().size();
                 connect(new Packet("cauntFileSync", cauntOfSyncFie));
-                cauntOfSyncFie = 5;
+                cauntOfSyncFie = 6;
                 inPack = (Packet) in.readObject();
                 cauntOfSyncFie += (double) inPack.getData();
                 nextStep();
@@ -217,9 +221,15 @@ public class Client implements Runnable {
                         fileManager.getListNewFiles().size());
                 nextStep();
 
+                Date dateSync = new Date();
+                connect(new Packet("time", dateSync));
+                in.readObject();
+                System.out.println("Time is out");
+
                 //Завершение операции синхронизации
                 connect(new Packet("exit"));
                 in.readObject();
+                System.out.println("exit");
 
                 //Запрос на вызов сборщика мусора, т.к. каждый раз ссылке на
                 //пакет присваеваются новые значения, но не утилизируюся старые

@@ -65,7 +65,6 @@ public class Manager implements Runnable {
 
     @Override
     public void run() {
-        controller.listDevice.addAll(db.getDataOfDevice());
         //5000 = 5 сек.
         connect = new Connect(5000, db);
         connect.search();
@@ -73,9 +72,9 @@ public class Manager implements Runnable {
         MySocket socket = connect.getConnection();
         if (flag) {
             if (socket.isClServ()){
-                client = new Client(fileManager, socket.getInetAddress(), controller);
+                client = new Client(fileManager, socket, controller);
             }
-            else new Server(fileManager, controller);
+            else new Server(fileManager, controller, socket.getDevice());
         } else return;
     }
 

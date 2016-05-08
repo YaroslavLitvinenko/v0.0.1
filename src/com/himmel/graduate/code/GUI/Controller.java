@@ -1,12 +1,12 @@
 package com.himmel.graduate.code.GUI;
 
 import com.himmel.graduate.code.DB.DBManagmnet;
+import com.himmel.graduate.code.DB.Data.Device;
 import com.himmel.graduate.code.DB.Data.MyFile;
 import com.himmel.graduate.code.DB.Data.MySetting;
 import com.himmel.graduate.code.GUI.DialogDev.SampleDevController;
 import com.himmel.graduate.code.Management.Main;
 import com.himmel.graduate.code.Management.Manager;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -37,9 +37,8 @@ public class Controller  {
     public Button butTime;
     public Button butLanguage;
     //Список устройств обновляется в классе Manager
-    public TableView<String> devicesTable;
-    public TableColumn<String, String> devicesColumn;
-    public ObservableList<String> listDevice = FXCollections.observableArrayList();
+    public TableView<Device> devicesTable;
+    public TableColumn<Device, String> devicesColumn;
     public Button butAddDevice;
     public Button btDelDevice;
     public Button butAddNewFolder;
@@ -50,7 +49,6 @@ public class Controller  {
     public RadioButton hour5;
     public RadioButton hour24;
     public Label lableLanguage;
-
     public RadioButton eng;
     public RadioButton uk;
     public RadioButton rus;
@@ -60,21 +58,18 @@ public class Controller  {
     public AnchorPane langyage;
     public TextField pathToFile;
     public Label mac;
-
     //TODO нихрена он не обновляется
     //Список файлов обновляется в классе FileManager
     public TableView<MyFile> tableOut;
     public TableColumn<MyFile, String> columnOut;
     public ObservableList<MyFile> listOut = FXCollections.observableArrayList();
-
     //Прогрес бар изменяется в классе Client
     public ProgressBar progres ;
-    private String nayMac;
+    private Device nayMac;
     private int numberLanguage;
     private DBManagmnet db;
     private Stage stage;
 
-    private MessageBox messageBox;
     private Manager manager;
 
 
@@ -101,15 +96,15 @@ public class Controller  {
     }
 
     public void initialize() {
-        messageBox = new MessageBox();
         tableOut.setItems(Main.db.getDataOfMyFiles());
         columnOut.setCellValueFactory(cellData -> cellData.getValue().pathProperty());
+
         devicesTable.setItems(Main.db.getDataOfDevice());
-        devicesColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()));
+        devicesColumn.setCellValueFactory(cellData -> cellData.getValue().macProperty());
         devicesTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> showData(newValue));
     }
 
-    private void showData (String mac){
+    private void showData (Device mac){
         nayMac = mac;
     }
 
@@ -160,7 +155,7 @@ public class Controller  {
 
                     manager.startSync();
                 } else {
-                    messageBox.showMassage(MessageBox.Typ.ERROR, "Данная папка недоступна для чтения/записи!");
+                    MessageBox.showMassage(MessageBox.Typ.ERROR, "Данная папка недоступна для чтения/записи!");
                 }
             }
         } catch (IOException e) {
@@ -215,6 +210,7 @@ public class Controller  {
         mac.setText(LANGUAGE[numberLanguage][18] + com.himmel.graduate.code.Network.Connect.MAC);
     }
 
+
     public void addDevice(ActionEvent actionEvent) {
         //TODO Допилить языки в диалогах
         try {
@@ -244,8 +240,11 @@ public class Controller  {
     }
 
     public void delDevice(ActionEvent actionEvent) {
+        //TODO Язык
         if (nayMac != null) {
-            Main.db.delDataOfDvices(nayMac);
+            Main.db.delDataOfDvices(nayMac.getMac());
+        } else {
+            MessageBox.showMassage(MessageBox.Typ.ERROR, "мак-адрес не выбран");
         }
     }
 }

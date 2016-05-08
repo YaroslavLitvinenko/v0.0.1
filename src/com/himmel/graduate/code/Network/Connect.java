@@ -1,6 +1,7 @@
 package com.himmel.graduate.code.Network;
 
 import com.himmel.graduate.code.DB.DBManagmnet;
+import com.himmel.graduate.code.DB.Data.Device;
 import javafx.collections.ObservableList;
 
 import java.io.IOException;
@@ -16,6 +17,7 @@ public class Connect {
     //TODO перед релизом убрать e.printStackTrace();
     //TODO Допилить если вылезут ошибки при получении mac => нет сетевой карты => все плохо!
     //TODO Допилить синхр. с определенными устройствами, пока что она работает даже если на одном устройстве есть этот мак
+    //TODO Если сервер запущен первее клиента оба становятся серверами
 
     //mac адрес этого ПК
     public static final String MAC;
@@ -131,14 +133,15 @@ public class Connect {
                                 byte[] dataMac = new byte[MAC.length()];
                                 System.arraycopy(data, MD5_TRUE.length, dataMac, 0, MAC.length());
                                 //Проверка на необходимость синхронизации с каким либо устройством осуществляется по mac адресу
+                                Device inputDevice;
                                 if (!possibleAddress.equals(InetAddress.getLocalHost()) && connectivity(possibleAddress) &&
-                                                Arrays.equals(dataMd5, MD5_TRUE) && contentsMac(new String(dataMac))) {
+                                                Arrays.equals(dataMd5, MD5_TRUE) && null != (inputDevice = contentsMac(new String(dataMac)))) {
                                     //Прекращение работы потока ожидающео связь от клиента
                                     bufSocket = new Socket(InetAddress.getByName("127.0.0.1"), PORT_TCP);
                                     bufSocket.close();
                                     bufSocket = new Socket(possibleAddress, PORT_TCP);
                                     //Сохранение информации о клиенте
-                                    socket = new MySocket(possibleAddress, true);
+                                    socket = new MySocket(possibleAddress, true, inputDevice);
                                     flagOfBroadcast = false;
                                 }
                             }
@@ -165,12 +168,12 @@ public class Connect {
             }
 
             //Проверка на содержании мака в БД
-            private boolean contentsMac (String mac) {
-                ObservableList<String> listDevices = db.getDataOfDevice();
-                for (String device : listDevices)
-                    if (device.equals(mac))
-                        return true;
-                return false;
+            private Device contentsMac (String mac) {
+                ObservableList<Device> listDevices = db.getDataOfDevice();
+                for (Device device : listDevices)
+                    if (device.equals(new Device(mac)))
+                        return device;
+                return null;
             }
         });
 
@@ -184,7 +187,7 @@ public class Connect {
                     try{
                         inetAddress = serverSocket.accept().getInetAddress();
                         if (!inetAddress.getHostName().equals(InetAddress.getByName("127.0.0.1").getHostAddress())) {
-                            socket = new MySocket(inetAddress, false);
+                            socket = new MySocket(inetAddress, false, new Device(2, "60:36:DD:D5:60:29", 3));
                         }
                         flagOfBroadcast = false;
                     } catch (IOException e) {
