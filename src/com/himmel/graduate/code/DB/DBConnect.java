@@ -16,6 +16,7 @@ class DBConnect implements Runnable {
     ObservableList<MySetting> settingsData = FXCollections.observableArrayList();
     ObservableList<MyFile> myFileData = FXCollections.observableArrayList();
     ObservableList<String> deviceData = FXCollections.observableArrayList();
+    ObservableList<String> syncData = FXCollections.observableArrayList();
 
     Thread mainThread;
     Thread settingTread;
@@ -73,6 +74,9 @@ class DBConnect implements Runnable {
             //Создане всех остальных таблиц
             //Создание таблицы устройств для синхронизации
             statementForOther.execute("CREATE TABLE IF NOT EXISTS 'DeviceForSync' (id INTEGER PRIMARY KEY AUTOINCREMENT, MAC STRING UNIQUE ON CONFLICT ABORT);");
+
+            //Создание таблицы с датами синхронизации
+            statementForOther.execute("CREATE TABLE IF NOT EXISTS 'Synchronization' (id INTEGER PRIMARY KEY AUTOINCREMENT, Time STRING);");
         } catch (SQLException e) {
             System.err.println(e);
         } finally {
@@ -247,9 +251,13 @@ class DBConnect implements Runnable {
 
     private void CreateOtherList(Statement statement) {
         try {
-            ResultSet resultSet = statement.executeQuery("SELECT * FROM DeviceForSync");
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM 'DeviceForSync'");
             while (resultSet.next()) {
                 deviceData.add(resultSet.getString("MAC"));
+            }
+            resultSet = statement.executeQuery("SELECT * FROM  'Synchronization'");
+            while (resultSet.next()) {
+                syncData.add(resultSet.getString("Time"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
